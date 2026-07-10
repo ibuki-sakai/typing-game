@@ -98,10 +98,51 @@
             position: relative;
             transition: background-color 0.1s ease, border-color 0.1s ease;
         }
+        /* ミス時の画面揺れ演出 */
         #typing-zone.miss {
             background-color: #2d1a22;
             border-color: #ff0055;
             box-shadow: 0 8px 24px rgba(255, 0, 85, 0.2);
+            animation: shake 0.1s linear infinite;
+        }
+        @keyframes shake {
+            0% { transform: translate(2px, 1px) rotate(0deg); }
+            10deg { transform: translate(-1px, -2px) rotate(-1deg); }
+            20deg { transform: translate(-3px, 0px) rotate(1deg); }
+            30deg { transform: translate(0px, 2px) rotate(0deg); }
+            40deg { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(2px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(2px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        /* 🔥 コンボ表示 */
+        #combo-display {
+            font-size: 20px;
+            font-weight: 900;
+            color: #ffaa00;
+            text-shadow: 0 0 10px rgba(255, 170, 0, 0.6);
+            min-height: 24px;
+            margin-bottom: 5px;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #combo-display.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+        /* コンボアップ時の跳ねるアニメーション用クラス */
+        .bump {
+            animation: bumpAnim 0.1s ease-out;
+        }
+        @keyframes bumpAnim {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); color: #fff; }
+            100% { transform: scale(1); }
         }
 
         /* ⏳ カウントダウン表示エリア */
@@ -183,7 +224,6 @@
             100% { opacity: 0.6; }
         }
 
-        /* ⌨️ スペースキーのスキップガイド */
         #skip-guide {
             font-size: 11px;
             color: #4a5568;
@@ -196,20 +236,73 @@
             color: #ffaa00; 
         }
 
-        /* 🔄 リトライボタン */
+        /* 📊 👑 リザルト画面のスタイル 👑 */
+        .result-container {
+            padding: 10px 0;
+        }
+        .result-title {
+            font-size: 28px;
+            color: #00ffaa;
+            font-weight: bold;
+            text-shadow: 0 0 15px rgba(0, 255, 170, 0.5);
+            margin-bottom: 20px;
+        }
+        .result-rank-box {
+            font-size: 72px;
+            font-weight: 900;
+            margin: 10px 0;
+            text-shadow: 0 0 20px rgba(255,255,255,0.4);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* ランク別の色 */
+        .rank-SS { color: #ff007f; text-shadow: 0 0 25px rgba(255, 0, 127, 0.8); }
+        .rank-A  { color: #ffaa00; text-shadow: 0 0 20px rgba(255, 170, 0, 0.7); }
+        .rank-B  { color: #00d2ff; text-shadow: 0 0 20px rgba(0, 210, 255, 0.7); }
+        .rank-C  { color: #a0aec0; }
+        .rank-D  { color: #4a5568; }
+
+        .result-table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            font-size: 16px;
+        }
+        .result-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #2d3748;
+        }
+        .result-table td:first-child {
+            text-align: left;
+            color: #a0aec0;
+        }
+        .result-table td:last-child {
+            text-align: right;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
         #retry-btn {
             background: #00ffaa;
             border: none;
             color: #11141a;
-            padding: 8px 16px;
+            padding: 10px 24px;
             font-weight: bold;
+            font-size: 16px;
             border-radius: 6px;
             cursor: pointer;
-            margin-top: 10px;
-            box-shadow: 0 0 8px rgba(0, 255, 170, 0.3);
+            margin-top: 15px;
+            box-shadow: 0 0 12px rgba(0, 255, 170, 0.4);
+            transition: all 0.2s;
         }
         #retry-btn:hover {
             background: #00cc88;
+            transform: scale(1.05);
         }
     </style>
 </head>
@@ -218,10 +311,8 @@
     <h1>DAYBREAK FRONTLINE</h1>
     <div class="subtitle">Music: Orangestar / Typing Game</div>
 
-    <!-- 本物の音楽タグ -->
     <audio id="my-audio" src="bgm.mp3.wav"></audio>
 
-    <!-- 🎧 自作したおしゃれな音楽プレイヤー -->
     <div id="custom-player">
         <button id="play-btn">PLAY</button>
         <div id="progress-container">
@@ -232,6 +323,9 @@
 
     <!-- タイピング画面 -->
     <div id="typing-zone">
+        <!-- 🔥 コンボ数カウンター -->
+        <div id="combo-display">0 COMBO</div>
+
         <div id="countdown-container">
             <div id="countdown-text"></div>
             <div id="countdown-bar-bg">
@@ -245,8 +339,6 @@
     </div>
 
     <script>
-        // 【重要】配列の中身を「日本語（ひらがな）」に変更します
-        // プログラムが自動で全てのローマ字パターンをリアルタイム解析します
         const sequence = [
             { time: 0,    text: "間奏：タイピングの準備をしてください", target: "ready" },
             { time: 42.5, text: "眠れないんだ風もなく茹だりそうな夜に", target: "ねむれないんだかぜもなくうだりそうなよるに" },
@@ -255,10 +347,10 @@
             { time: 53,   text: "抜け出そうぜ君を連れ飛び出した", target: "ぬけだそうぜきみをつれとびだした" },
         ];
 
-        // ─── 🤖 自動ローマ字マッピング辞書 ───
+        // 🤖 自動ローマ字マッピング辞書
         const romanMap = {
             'あ':['a'],'い':['i','yi'],'う':['u','wu'],'え':['e','ye'],'お':['o'],
-            'か':['ka','ca'],'き':['ki'],'く':['ku','cu','qu'],'け':['ke','cl'],/*cl除外可*/'こ':['ko','co'],
+            'か':['ka','ca'],'き':['ki'],'く':['ku','cu','qu'],'け':['ke'],'こ':['ko','co'],
             'さ':['sa'],'し':['si','shi','ci'],'す':['su'],'せ':['se'],'そ':['so'],
             'た':['ta'],'ち':['ti','chi'],'つ':['tu','tsu'],'て':['te'],'と':['to'],
             'な':['na'],'に':['ni'],'ぬ':['nu'],'ね':['ne'],'の':['no'],
@@ -268,7 +360,7 @@
             'ら':['ra'],'り':['ri'],'る':['ru'],'れ':['re'],'ろ':['ro'],
             'わ':['wa'],'を':['wo'],'ん':['nn','n','xn'],
             'が':['ga'],'ぎ':['gi'],'ぐ':['gu'],'げ':['ge'],'ご':['go'],
-            'ざ':['za'],'じ':['zi','ji'],'ず':['zu','zu'],
+            'ざ':['za'],'じ':['zi','ji'],'ず':['zu'],
             'だ':['da'],'ぢ':['di'],'づ':['du'],'で':['de'],'ど':['do'],
             'ば':['ba'],'び':['bi'],'ぶ':['bu'],'べ':['be'],'ぼ':['bo'],
             'ぱ':['pa'],'ぴ':['pi'],'ぷ':['pu'],'ぺ':['pe'],'ぽ':['po'],
@@ -277,12 +369,12 @@
             'っ':['ltu','xtu','ltsu'],
             'うぁ':['wha'],'うぃ':['whi','wi'],'うぇ':['whe','we'],'うぉ':['who'],
             'きゃ':['kya'],'きぃ':['kyi'],'きゅ':['kyu'],'きぇ':['kye'],'きょ':['kyo'],
-            'しゃ':['sya','sha'],'しぃ':['syi'],'しゅ':['syu','shu'],'しぇ':['sye','she'],'しょ':['sya','sho'],
+            'しゃ':['sya','sha'],'しぃ':['syi'],'しゅ':['syu','shu'],'しぇ':['sye','she'],'しょ':['sho'],
             'ちゃ':['tya','cha'],'ちぃ':['tyi'],'ちゅ':['tyu','chu'],'ちぇ':['tye','che'],'ちょ':['tyo','cho'],
             'にゃ':['nya'],'にぃ':['nyi'],'にゅ':['nyu'],'にぇ':['nye'],'にょ':['nyo'],
             'ひゃ':['hya'],'ひぃ':['hyi'],'ひゅ':['hyu'],'ひぇ':['hye'],'ひょ':['hyo'],
             'みゃ':['mya'],'みぃ':['myi'],'みゅ':['myu'],'みぇ':['mye'],'みょ':['myo'],
-            'りゃ':['rya'],'りぃ':['ryi'],'りゅ':['ryu'],'りぇ':['bye'],'りょ':['ryo'],
+            'りゃ':['rya'],'りぃ':['ryi'],'りゅ':['ryu'],'りぇ':['rye'],'りょ':['ryo'],
             'ぎゃ':['gya'],'ぎぃ':['gyi'],'ぎゅ':['gyu'],'ぎぇ':['gye'],'ぎょ':['gyo'],
             'じゃ':['zya','ja'],'じぃ':['zyi'],'じゅ':['zyu','ju'],'じぇ':['zye','je'],'じょ':['zyo','jo'],
             'びゃ':['bya'],'びぃ':['byi'],'びゅ':['byu'],'びぇ':['bye'],'びょ':['byo'],
@@ -300,14 +392,24 @@
         const countdownBar = document.getElementById("countdown-bar");
         const countdownBarBg = document.getElementById("countdown-bar-bg");
         const skipGuide = document.getElementById("skip-guide");
+        const comboDisplay = document.getElementById("combo-display");
 
         let currentIndex = -1;
         let isGameClear = false;
 
-        // ─── 🧠 タイピング状態管理オブジェクト ───
+        // タイピング状態管理
         let currentKanaStr = ""; 
-        let typedRoman = "";     // 入力済みのローマ字
-        let remainingRoman = ""; // 画面表示用のデフォルトの残りローマ字
+        let typedRoman = "";     
+        let remainingRoman = ""; 
+
+        // 📊 スコア・リザルト用データ統計
+        let stats = {
+            goodTypes: 0,
+            missTypes: 0,
+            maxCombo: 0,
+            currentCombo: 0,
+            startTime: 0
+        };
 
         function updatePlayButton() {
             if (audio.paused) {
@@ -321,8 +423,12 @@
 
         playBtn.addEventListener("click", () => {
             if (isGameClear) return;
-            if (audio.paused) audio.play();
-            else audio.pause();
+            if (audio.paused) {
+                audio.play();
+                if(stats.startTime === 0) stats.startTime = Date.now(); // 最初の計測開始
+            } else {
+                audio.pause();
+            }
             updatePlayButton();
         });
 
@@ -353,7 +459,6 @@
 
         audio.addEventListener("ended", () => { showClearScreen(); });
 
-        // フレーズが切り替わった時の初期化
         function initPhrase() {
             typedRoman = "";
             remainingRoman = "";
@@ -368,7 +473,6 @@
             updateDisplay();
         }
 
-        // ひらがなからデフォルトの一番標準的なローマ字文字列を生成する
         function makeDefaultRoman(kana) {
             let res = "";
             let i = 0;
@@ -377,7 +481,6 @@
                     res += romanMap[kana.substr(i,2)][0];
                     i += 2;
                 } else if(kana[i] === 'っ' && i+1 < kana.length) {
-                    // 次の文字のデフォルトローマ字の頭文字を重ねる
                     let nextKana = kana[i+1];
                     let nextRom = romanMap[nextKana] ? romanMap[nextKana][0] : "";
                     if(nextRom) { res += nextRom[0]; }
@@ -391,12 +494,10 @@
             return res;
         }
 
-        // 現在の位置から、入力可能なローマ字の全ルートパターンを再帰的に探すコアロジック
         function checkInput(kanaStr, inputStr) {
             if (inputStr === "") return { match: true, remainingKana: kanaStr };
             if (kanaStr === "") return { match: false };
 
-            // 1. 2文字の特殊なひらがな（「きゃ」「ふぁ」など）をチェック
             if (kanaStr.length >= 2) {
                 let doubleChar = kanaStr.substr(0, 2);
                 if (romanMap[doubleChar]) {
@@ -405,37 +506,28 @@
                             let res = checkInput(kanaStr.substr(2), inputStr.substr(r.length));
                             if (res.match) return res;
                         }
-                        if (r.startsWith(inputStr)) {
-                            return { match: true, remainingKana: kanaStr };
-                        }
+                        if (r.startsWith(inputStr)) return { match: true, remainingKana: kanaStr };
                     }
                 }
             }
 
-            // 2. 1文字のひらがなをチェック
             let singleChar = kanaStr[0];
             
-            // 「っ」の特殊判定（子音重ね）
             if (singleChar === 'っ' && kanaStr.length >= 2) {
                 let nextChar = kanaStr[1];
                 let nextRomans = romanMap[nextChar] || [];
                 for (let nr of nextRomans) {
-                    let firstChar = nr[0]; // 子音の1文字目 (例: t, k, s)
+                    let firstChar = nr[0];
                     if (inputStr.startsWith(firstChar)) {
-                        // 子音1文字を消費して「っ」を突破し、次は普通にnextChar以降を処理させる
                         let res = checkInput(kanaStr.substr(1), inputStr.substr(1));
                         if (res.match) return res;
                     }
-                    if (firstChar === inputStr) {
-                        return { match: true, remainingKana: kanaStr };
-                    }
+                    if (firstChar === inputStr) return { match: true, remainingKana: kanaStr };
                 }
             }
 
-            // 「ん」の特殊判定（単体nで次が子音の場合）
             if (singleChar === 'ん' && kanaStr.length >= 2) {
                 let nextChar = kanaStr[1];
-                // 次の文字が母音・あ行・な行・や行以外なら、n単体でも通す
                 if (!['あ','い','う','え','お','な','に','ぬ','ね','の','や','ゆ','よ','ん','ぁ','ぃ','ぅ','ぇ','ぉ','ゃ','ゅ','ょ'].includes(nextChar)) {
                     if (inputStr.startsWith('n')) {
                         let res = checkInput(kanaStr.substr(1), inputStr.substr(1));
@@ -444,20 +536,16 @@
                 }
             }
 
-            // 通常の1文字辞書チェック
             if (romanMap[singleChar]) {
                 for (let r of romanMap[singleChar]) {
                     if (inputStr.startsWith(r)) {
                         let res = checkInput(kanaStr.substr(1), inputStr.substr(r.length));
                         if (res.match) return res;
                     }
-                    if (r.startsWith(inputStr)) {
-                        return { match: true, remainingKana: kanaStr };
-                    }
+                    if (r.startsWith(inputStr)) return { match: true, remainingKana: kanaStr };
                 }
             }
 
-            // 特殊文字やreadyなどアルファベットそのままの場合
             if (inputStr.toLowerCase() === singleChar.toLowerCase()) {
                 return { match: true, remainingKana: kanaStr.substr(1) };
             }
@@ -471,7 +559,6 @@
         function isPhraseComplete() {
             if (currentIndex === -1) return false;
             if (currentKanaStr === "ready") return typedRoman === "ready";
-            // 残りのかな文字がない＝打ち終わっている
             let check = checkInput(currentKanaStr, typedRoman);
             return check.match && check.remainingKana === "";
         }
@@ -551,6 +638,7 @@
                 lyricsDiv.innerHTML = '<span class="status-msg">▶ボタンを押してスタート！</span>';
                 displayDiv.innerHTML = "";
                 clearCountdown();
+                comboDisplay.classList.remove("active");
                 return;
             }
 
@@ -563,8 +651,6 @@
                 lyricsDiv.innerText = currentData.text;
             }
 
-            // 表示用文字列のアップデート
-            // ユーザーがタイピングした確定部分 + まだ打っていない残りの部分(予測)
             let check = checkInput(currentKanaStr, typedRoman);
             if (check.match) {
                 remainingRoman = makeDefaultRoman(check.remainingKana);
@@ -572,21 +658,77 @@
 
             let html = `<span class="typed">${typedRoman}</span><span>${remainingRoman}</span>`;
             displayDiv.innerHTML = html;
+
+            // 🔥 コンボ表示の更新
+            if (stats.currentCombo >= 3) {
+                comboDisplay.innerText = `${stats.currentCombo} COMBO`;
+                comboDisplay.classList.add("active");
+                // ポップアニメーションをリセットして再発火
+                comboDisplay.classList.remove("bump");
+                void comboDisplay.offsetWidth; 
+                comboDisplay.classList.add("bump");
+            } else {
+                comboDisplay.classList.remove("active");
+            }
         }
 
+        // 📊 👑 リザルト画面生成ロジック 👑
         function showClearScreen() {
             isGameClear = true;
             audio.pause();
             updatePlayButton();
             clearCountdown();
-            document.getElementById("lyrics").innerHTML = '<span class="clear-msg">🎉 GAME CLEAR! 🎉</span>';
-            document.getElementById("input-display").innerHTML = '<button id="retry-btn" onclick="resetGame()">もう一度遊ぶ</button>';
+            comboDisplay.classList.remove("active");
+
+            // 計算用データ
+            const totalKeys = stats.goodTypes + stats.missTypes;
+            const accuracy = totalKeys > 0 ? ((stats.goodTypes / totalKeys) * 100).toFixed(1) : 0;
+            
+            // WPM (1分間あたりの打鍵数) 計算
+            const elapsedMinutes = (Date.now() - stats.startTime) / 1000 / 60;
+            const wpm = elapsedMinutes > 0 ? Math.floor(stats.goodTypes / elapsedMinutes) : 0;
+
+            // 👑 ランク判定ロジック
+            let rank = "D";
+            let rankClass = "rank-D";
+            if (accuracy >= 98 && wpm >= 200) { rank = "SS"; rankClass = "rank-SS"; }
+            else if (accuracy >= 95 && wpm >= 150) { rank = "A"; rankClass = "rank-A"; }
+            else if (accuracy >= 90 && wpm >= 100) { rank = "B"; rankClass = "rank-B"; }
+            else if (accuracy >= 80) { rank = "C"; rankClass = "rank-C"; }
+
+            // 画面の書き換え
+            document.getElementById("lyrics").innerHTML = '<div class="result-title">🎉 RESULTS 🎉</div>';
+            
+            let resultHtml = `
+                <div class="result-container">
+                    <div class="result-rank-box ${rankClass}">${rank}</div>
+                    <table class="result-table">
+                        <tr><td>正解打鍵数 (Good)</td><td>${stats.goodTypes} 回</td></tr>
+                        <tr><td>ミス入力 (Miss)</td><td>${stats.missTypes} 回</td></tr>
+                        <tr><td>正確率 (Accuracy)</td><td>${accuracy} %</td></tr>
+                        <tr><td>最高コンボ数 (Max Combo)</td><td>${stats.maxCombo} Combo</td></tr>
+                        <tr><td>タイピング速度 (WPM)</td><td>${wpm} 打/分</td></tr>
+                    </table>
+                    <button id="retry-btn" onclick="resetGame()">もう一度挑戦する</button>
+                </div>
+            `;
+            document.getElementById("input-display").innerHTML = resultHtml;
         }
 
         function resetGame() {
             isGameClear = false;
             currentIndex = -1;
             audio.currentTime = 0;
+            
+            // 統計リセット
+            stats = {
+                goodTypes: 0,
+                missTypes: 0,
+                maxCombo: 0,
+                currentCombo: 0,
+                startTime: Date.now()
+            };
+
             initPhrase();
             audio.play();
             updatePlayButton();
@@ -612,18 +754,26 @@
             if (e.key.length > 1) return;
             if (isPhraseComplete()) return;
 
-            // 仮に新しいキーを追加した文字列を作って検証
             let testInput = typedRoman + e.key.toLowerCase();
             let check = checkInput(currentKanaStr, testInput);
 
             if (check.match) {
-                // 有効なルートが存在すれば確定
+                // ⭕ 正解入力
                 typedRoman = testInput;
+                stats.goodTypes++;
+                stats.currentCombo++;
+                if (stats.currentCombo > stats.maxCombo) {
+                    stats.maxCombo = stats.currentCombo;
+                }
                 updateDisplay();
                 updateCountdown(audio.currentTime);
             } else {
-                // どのルートにも繋がらなければミス
+                // ❌ ミス入力
+                stats.missTypes++;
+                stats.currentCombo = 0; // コンボが途切れる！
+                
                 typingZone.classList.add("miss");
+                updateDisplay(); // コンボカウンターを即非表示にするため
                 setTimeout(() => { typingZone.classList.remove("miss"); }, 100);
             }
         });
