@@ -98,7 +98,6 @@
             position: relative;
             transition: background-color 0.1s ease, border-color 0.1s ease;
         }
-        /* 💥 ミス入力時のフラッシュ効果 */
         #typing-zone.miss {
             background-color: #2d1a22;
             border-color: #ff0055;
@@ -121,6 +120,11 @@
             font-family: monospace;
             text-shadow: 0 0 8px rgba(255, 170, 0, 0.4);
         }
+        /* タイピング中のカウントダウン表示（水色） */
+        #countdown-text.typing-now {
+            color: #00d2ff;
+            text-shadow: 0 0 8px rgba(0, 210, 255, 0.4);
+        }
         #countdown-bar-bg {
             width: 50%;
             background: #2d3748;
@@ -134,6 +138,10 @@
             height: 100%;
             width: 0%;
             box-shadow: 0 0 6px #ffaa00;
+        }
+        #countdown-bar.typing-now {
+            background: #00d2ff;
+            box-shadow: 0 0 6px #00d2ff;
         }
 
         #lyrics { 
@@ -186,7 +194,7 @@
             transition: color 0.2s ease;
         }
         #skip-guide.active {
-            color: #ffaa00;
+            color: #ffaa00; /* スキップ可能な時（打ち終わった時）だけオレンジに光る */
         }
 
         /* 🔄 リトライボタン */
@@ -265,7 +273,6 @@
         let typedText = "";
         let isGameClear = false;
 
-        // 再生状態のUIリフレッシュ
         function updatePlayButton() {
             if (audio.paused) {
                 playBtn.innerText = "PLAY";
@@ -278,7 +285,6 @@
             }
         }
 
-        // 1. 再生・一時停止ボタンのクリック処理
         playBtn.addEventListener("click", () => {
             if (isGameClear) return;
             if (audio.paused) {
@@ -289,25 +295,21 @@
             updatePlayButton();
         });
 
-        // 2. 音楽の時間更新に合わせて、バーとタイピング画面を動かす
         audio.addEventListener("timeupdate", () => {
             if (isGameClear) return;
 
             const currentTime = audio.currentTime;
             const duration = audio.duration || 0;
 
-            // ─── プレイヤーの表示更新 ───
             if (duration > 0) {
                 const progressPercent = (currentTime / duration) * 100;
                 progressBar.style.width = `${progressPercent}%`;
             }
 
-            // 分:秒 のテキスト表示
             const minutes = Math.floor(currentTime / 60);
             const seconds = Math.floor(currentTime % 60).toString().padStart(2, '0');
             timeDisplay.innerText = `${minutes}:${seconds}`;
 
-            // ─── タイピング画面の連動 ───
             let foundIndex = -1;
             for (let i = 0; i < sequence.length; i++) {
                 if (currentTime >= sequence[i].time) {
@@ -315,38 +317,40 @@
                 }
             }
 
-            // フレーズが切り替わった場合のみリセット
             if (foundIndex !== currentIndex) {
                 currentIndex = foundIndex;
                 typedText = ""; 
                 updateDisplay();
             }
 
-            // ─── カウントダウンとスキップガイドの更新 ───
             updateCountdown(currentTime);
         });
 
-        // 楽曲終了時の処理
         audio.addEventListener("ended", () => {
             showClearScreen();
         });
 
-        // カウントダウンとスキップ可能状態を管理する関数
+        // ⏳ カウントダウンとスキップ管理
         function updateCountdown(currentTime) {
-            if (isGameClear) return;
-            if (currentIndex === -1) {
+            if (isGameClear || currentIndex === -1) {
                 clearCountdown();
                 return;
             }
 
-            // 最後のフレーズを打ち終わった場合は即クリア画面へ
-            if (currentIndex === sequence.length - 1 && typedText === sequence[currentIndex].target) {
-                showClearScreen();
-                return;
-            }
-
-            if (currentIndex >= sequence.length - 1) {
-                clearCountdown();
+            // 最後のフレーズの場合
+            if (currentIndex === sequence.length - 1) {
+                if (typedText === sequence[currentIndex].target) {
+                    showClearScreen();
+                } else {
+                    const duration = audio.duration || sequence[currentIndex].time + 5;
+                    const timeLeft = duration - currentTime;
+                    if (timeLeft > 0) {
+                        countdownText.innerText = `Finish... ${timeLeft.toFixed(1)}s`;
+                        countdownText.classList.add("typing-now");
+                    } else {
+                        clearCountdown();
+                    }
+                }
                 return;
             }
 
@@ -354,23 +358,28 @@
             const nextStartTime = sequence[currentIndex + 1].time;
             const timeLeft = nextStartTime - currentTime;
 
-            // スキップが可能な条件（打ち終わっているか、最初の準備期間のとき）
-            if (typedText === sequence[currentIndex].target || sequence[currentIndex].target === "ready") {
-                skipGuide.classList.add("active"); // ガイドを光らせる
+            if (timeLeft > 0) {
+                const totalWaitTime = nextStartTime - currentStartTime;
+                const progressPercent = (timeLeft / totalWaitTime) * 100;
 
-                if (timeLeft > 0) {
-                    const totalWaitTime = nextStartTime - currentStartTime;
-                    const progressPercent = (timeLeft / totalWaitTime) * 100;
+                countdownBar.style.width = `${progressPercent}%`;
+                countdownBarBg.style.opacity = "1";
 
+                // 【スキップ可否による見た目の制御】
+                if (typedText === sequence[currentIndex].target || sequence[currentIndex].target === "ready") {
+                    // スキップ可能（次のフレーズを待っている状態） -> オレンジ
+                    skipGuide.classList.add("active");
                     countdownText.innerText = `Next... ${timeLeft.toFixed(1)}s`;
-                    countdownBar.style.width = `${progressPercent}%`;
-                    countdownBarBg.style.opacity = "1";
+                    countdownText.classList.remove("typing-now");
+                    countdownBar.classList.remove("typing-now");
                 } else {
-                    clearCountdown();
+                    // タイピング中（まだ未完了） -> 水色。ガイドの光は消す
+                    skipGuide.classList.remove("active");
+                    countdownText.innerText = `Time Limit... ${timeLeft.toFixed(1)}s`;
+                    countdownText.classList.add("typing-now");
+                    countdownBar.classList.add("typing-now");
                 }
             } else {
-                // まだタイピング中の時はスキップ不可
-                skipGuide.classList.remove("active");
                 clearCountdown();
             }
         }
@@ -379,12 +388,9 @@
             countdownText.innerText = "";
             countdownBar.style.width = "0%";
             countdownBarBg.style.opacity = "0";
-            if (currentIndex === -1 || currentIndex >= sequence.length - 1) {
-                skipGuide.classList.remove("active");
-            }
+            skipGuide.classList.remove("active");
         }
 
-        // 3. バーの途中をクリックしたらシーク
         progressContainer.addEventListener("click", (e) => {
             if (isGameClear) return;
             const width = progressContainer.clientWidth;
@@ -392,12 +398,10 @@
             const duration = audio.duration;
             if (duration) {
                 audio.currentTime = (clickX / width) * duration;
-                // シークした瞬間にインデックスを再計算させるためcurrentIndexをリセット
                 currentIndex = -2; 
             }
         });
 
-        // 画面表示を更新する関数
         function updateDisplay() {
             if (isGameClear) return;
 
@@ -413,7 +417,6 @@
 
             const currentData = sequence[currentIndex];
             
-            // 打ち終わっている場合は「OK!」表示を維持
             if (typedText === currentData.target && currentData.target !== "ready") {
                 lyricsDiv.innerHTML = '<span class="clear-msg">✨ OK! ✨</span>';
             } else {
@@ -431,7 +434,6 @@
             displayDiv.innerHTML = html;
         }
 
-        // ゲームクリア画面の表示
         function showClearScreen() {
             isGameClear = true;
             audio.pause();
@@ -440,10 +442,8 @@
             clearCountdown();
             document.getElementById("lyrics").innerHTML = '<span class="clear-msg">🎉 GAME CLEAR! 🎉</span>';
             document.getElementById("input-display").innerHTML = '<button id="retry-btn" onclick="resetGame()">もう一度遊ぶ</button>';
-            skipGuide.classList.remove("active");
         }
 
-        // ゲームのリセット（最初から）
         function resetGame() {
             isGameClear = false;
             currentIndex = -1;
@@ -458,10 +458,11 @@
         window.addEventListener("keydown", (e) => {
             if (currentIndex === -1 || isGameClear) return;
 
-            // 💡 スペースキーでのスキップ判定
+            // 💡 スペースキーでのスキップ
             if (e.key === " " || e.key === "Spacebar") {
-                e.preventDefault(); // スクロール防止
+                e.preventDefault(); // 画面スクロール防止
 
+                // 【修正】打ち終わっている状態 or 最初のReady状態のとき「だけ」スキップを許可
                 if (typedText === sequence[currentIndex].target || sequence[currentIndex].target === "ready") {
                     if (currentIndex < sequence.length - 1) {
                         audio.currentTime = sequence[currentIndex + 1].time;
@@ -469,29 +470,25 @@
                         showClearScreen();
                     }
                 }
-                return;
+                return; // タイピング中の場合は何もせずスルー
             }
 
             if (e.key.length > 1) return;
             
             const currentData = sequence[currentIndex];
-            
-            // 既に打ち終わっているフレーズなら入力を無視
             if (typedText === currentData.target) return;
 
             const nextChar = currentData.target[typedText.length];
 
             if (e.key.toLowerCase() === (nextChar ? nextChar.toLowerCase() : "")) {
-                // 正解入力
                 typedText += nextChar;
                 updateDisplay();
 
                 if (typedText === currentData.target) {
-                    updateDisplay(); // OK表示にするために呼び出し
+                    updateDisplay();
                     updateCountdown(audio.currentTime);
                 }
             } else {
-                // ❌ タイプミス時のフラッシュエフェクト
                 typingZone.classList.add("miss");
                 setTimeout(() => {
                     typingZone.classList.remove("miss");
@@ -499,7 +496,6 @@
             }
         });
 
-        // ページ読み込み時の初期表示
         updateDisplay();
     </script>
 </body>
