@@ -26,7 +26,7 @@
             margin-bottom: 20px;
         }
 
-        /* 🎧 おしゃれにしたカスタム音楽プレイヤー */
+        /* 🎧 カスタム音楽プレイヤー */
         #custom-player {
             margin: 20px auto; 
             max-width: 600px; 
@@ -38,10 +38,9 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            box-sizing: border-box; /* 枠線が幅を圧迫しないように */
+            box-sizing: border-box;
         }
 
-        /* 再生・一時停止ボタン */
         #play-btn {
             background: #00d2ff;
             border: none;
@@ -61,7 +60,6 @@
             transform: scale(1.03);
         }
 
-        /* プログレスバー（進行状況の横棒）のコンテナ */
         #progress-container {
             flex-grow: 1;
             background: #2d3748;
@@ -71,7 +69,6 @@
             position: relative;
             overflow: hidden;
         }
-        /* 音楽が進むと伸びる青いバー */
         #progress-bar {
             background: linear-gradient(90deg, #00d2ff, #00f5ff);
             height: 100%;
@@ -81,7 +78,6 @@
             transition: width 0.1s linear;
         }
 
-        /* 時間表示 */
         #time-display {
             font-family: monospace;
             color: #a0aec0;
@@ -89,35 +85,76 @@
             min-width: 45px;
         }
 
-        /* ─── タイピングゾーンの改良 ─── */
+        /* ─── タイピングゾーン ─── */
         #typing-zone { 
             margin: 20px auto; 
-            padding: 30px 24px; 
+            padding: 30px 24px 15px 24px;
             background: #1e222b; 
             max-width: 600px; 
             border-radius: 16px; 
             box-shadow: 0 8px 24px rgba(0, 210, 255, 0.15);
             border: 1px solid #2d3748;
-            box-sizing: border-box; /* パディングを含めて最大600pxに収める */
+            box-sizing: border-box;
+            position: relative;
+            transition: background-color 0.1s ease, border-color 0.1s ease;
         }
+        /* 💥 ミス入力時のフラッシュ効果 */
+        #typing-zone.miss {
+            background-color: #2d1a22;
+            border-color: #ff0055;
+            box-shadow: 0 8px 24px rgba(255, 0, 85, 0.2);
+        }
+
+        /* ⏳ カウントダウン表示エリア */
+        #countdown-container {
+            margin-bottom: 15px;
+            min-height: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        #countdown-text {
+            font-size: 14px;
+            color: #ffaa00;
+            font-weight: bold;
+            font-family: monospace;
+            text-shadow: 0 0 8px rgba(255, 170, 0, 0.4);
+        }
+        #countdown-bar-bg {
+            width: 50%;
+            background: #2d3748;
+            height: 4px;
+            border-radius: 2px;
+            overflow: hidden;
+            transition: opacity 0.3s ease;
+        }
+        #countdown-bar {
+            background: #ffaa00;
+            height: 100%;
+            width: 0%;
+            box-shadow: 0 0 6px #ffaa00;
+        }
+
         #lyrics { 
-            font-size: 24px; /* 少しだけ小さくして収まりを良く */
+            font-size: 24px; 
             font-weight: bold; 
             min-height: 40px; 
             color: #ffffff; 
             margin-bottom: 15px;
-            word-break: break-all; /* 日本語や英語が長くなっても強制的に折り返す */
+            word-break: break-all;
             line-height: 1.4;
         }
         #input-display { 
-            font-size: 20px; /* ローマ字がはみ出さないように調整 */
-            letter-spacing: 1px; /* 詰まりすぎず広がりすぎず */
+            font-size: 20px; 
+            letter-spacing: 1px; 
             font-family: 'Courier New', Courier, monospace;
             color: #4a5568; 
             min-height: 30px;
-            word-break: break-all; /* 💡ここが重要！長い英字（ローマ字）を枠の端で自動折り返し */
+            word-break: break-all;
             line-height: 1.5;
             text-align: center;
+            margin-bottom: 15px;
         }
         .typed { 
             color: #00d2ff; 
@@ -129,10 +166,43 @@
             font-weight: bold;
             animation: pulse 1.5s infinite;
         }
+        .clear-msg {
+            color: #00ffaa;
+            text-shadow: 0 0 10px rgba(0, 255, 170, 0.6);
+        }
         @keyframes pulse {
             0% { opacity: 0.6; }
             50% { opacity: 1; }
             100% { opacity: 0.6; }
+        }
+
+        /* ⌨️ スペースキーのスキップガイド */
+        #skip-guide {
+            font-size: 11px;
+            color: #4a5568;
+            text-align: right;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            transition: color 0.2s ease;
+        }
+        #skip-guide.active {
+            color: #ffaa00;
+        }
+
+        /* 🔄 リトライボタン */
+        #retry-btn {
+            background: #00ffaa;
+            border: none;
+            color: #11141a;
+            padding: 8px 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 0 8px rgba(0, 255, 170, 0.3);
+        }
+        #retry-btn:hover {
+            background: #00cc88;
         }
     </style>
 </head>
@@ -155,44 +225,74 @@
 
     <!-- タイピング画面 -->
     <div id="typing-zone">
+        <!-- ⏳ カウントダウン表示用の枠 -->
+        <div id="countdown-container">
+            <div id="countdown-text"></div>
+            <div id="countdown-bar-bg">
+                <div id="countdown-bar"></div>
+            </div>
+        </div>
+        
         <div id="lyrics"></div>
         <div id="input-display"></div>
+
+        <!-- ⌨️ スキップのガイド表示 -->
+        <div id="skip-guide">[Space] Skip</div>
     </div>
 
     <script>
         const sequence = [
-            { time: 0,  text: "間奏：タイピングの準備をしてください", target: "ready" },
-            { time: 42.5,  text: "眠れないんだ風もなく茹だりそうな夜に", target: "nemurenaindakazemonakuudarisounayoruni" },
-            { time: 46,  text: "君の声が耳元で揺らいだ感傷に浸ってばっか", target: "kiminokoegamimimotodeyuraidakannshounihitattebakka" },
-            { time: 51,  text: "何も変わらない笑えない日々を", target: "nanimokawaranaiwaraenaihibiwo" },
-            { time: 53,  text: "抜け出そうぜ君を連れ飛び出した", target: "nukedasouzekimiwoturetobidashita" },
+            { time: 0,    text: "間奏：タイピングの準備をしてください", target: "ready" },
+            { time: 42.5, text: "眠れないんだ風もなく茹だりそうな夜に", target: "nemurenaindakazemonakuudarisounayoruni" },
+            { time: 46,   text: "君の声が耳元で揺らいだ感傷に浸ってばっか", target: "kiminokoegamimimotodeyuraidakannshounihitattebakka" },
+            { time: 51,   text: "何も変わらない笑えない日々を", target: "nanimokawaranaiwaraenaihibiwo" },
+            { time: 53,   text: "抜け出そうぜ君を連れ飛び出した", target: "nukedasouzekimiwoturetobidashita" },
         ];
         const audio = document.getElementById("my-audio");
         const playBtn = document.getElementById("play-btn");
         const progressBar = document.getElementById("progress-bar");
         const progressContainer = document.getElementById("progress-container");
         const timeDisplay = document.getElementById("time-display");
+        const typingZone = document.getElementById("typing-zone");
+
+        // 要素の取得
+        const countdownText = document.getElementById("countdown-text");
+        const countdownBar = document.getElementById("countdown-bar");
+        const countdownBarBg = document.getElementById("countdown-bar-bg");
+        const skipGuide = document.getElementById("skip-guide");
 
         let currentIndex = -1;
         let typedText = "";
+        let isGameClear = false;
 
-        // 1. 再生・一時停止ボタンのクリック処理
-        playBtn.addEventListener("click", () => {
+        // 再生状態のUIリフレッシュ
+        function updatePlayButton() {
             if (audio.paused) {
-                audio.play();
-                playBtn.innerText = "PAUSE";
-                playBtn.style.background = "#ff007f"; 
-                playBtn.style.boxShadow = "0 0 10px rgba(255, 0, 127, 0.3)";
-            } else {
-                audio.pause();
                 playBtn.innerText = "PLAY";
                 playBtn.style.background = "#00d2ff"; 
                 playBtn.style.boxShadow = "0 0 10px rgba(0, 210, 255, 0.3)";
+            } else {
+                playBtn.innerText = "PAUSE";
+                playBtn.style.background = "#ff007f"; 
+                playBtn.style.boxShadow = "0 0 10px rgba(255, 0, 127, 0.3)";
             }
+        }
+
+        // 1. 再生・一時停止ボタンのクリック処理
+        playBtn.addEventListener("click", () => {
+            if (isGameClear) return;
+            if (audio.paused) {
+                audio.play();
+            } else {
+                audio.pause();
+            }
+            updatePlayButton();
         });
 
         // 2. 音楽の時間更新に合わせて、バーとタイピング画面を動かす
         audio.addEventListener("timeupdate", () => {
+            if (isGameClear) return;
+
             const currentTime = audio.currentTime;
             const duration = audio.duration || 0;
 
@@ -215,36 +315,110 @@
                 }
             }
 
+            // フレーズが切り替わった場合のみリセット
             if (foundIndex !== currentIndex) {
                 currentIndex = foundIndex;
                 typedText = ""; 
                 updateDisplay();
             }
+
+            // ─── カウントダウンとスキップガイドの更新 ───
+            updateCountdown(currentTime);
         });
 
-        // 3. バーの途中をクリックしたら、その場所に曲をスキップさせる
+        // 楽曲終了時の処理
+        audio.addEventListener("ended", () => {
+            showClearScreen();
+        });
+
+        // カウントダウンとスキップ可能状態を管理する関数
+        function updateCountdown(currentTime) {
+            if (isGameClear) return;
+            if (currentIndex === -1) {
+                clearCountdown();
+                return;
+            }
+
+            // 最後のフレーズを打ち終わった場合は即クリア画面へ
+            if (currentIndex === sequence.length - 1 && typedText === sequence[currentIndex].target) {
+                showClearScreen();
+                return;
+            }
+
+            if (currentIndex >= sequence.length - 1) {
+                clearCountdown();
+                return;
+            }
+
+            const currentStartTime = sequence[currentIndex].time;
+            const nextStartTime = sequence[currentIndex + 1].time;
+            const timeLeft = nextStartTime - currentTime;
+
+            // スキップが可能な条件（打ち終わっているか、最初の準備期間のとき）
+            if (typedText === sequence[currentIndex].target || sequence[currentIndex].target === "ready") {
+                skipGuide.classList.add("active"); // ガイドを光らせる
+
+                if (timeLeft > 0) {
+                    const totalWaitTime = nextStartTime - currentStartTime;
+                    const progressPercent = (timeLeft / totalWaitTime) * 100;
+
+                    countdownText.innerText = `Next... ${timeLeft.toFixed(1)}s`;
+                    countdownBar.style.width = `${progressPercent}%`;
+                    countdownBarBg.style.opacity = "1";
+                } else {
+                    clearCountdown();
+                }
+            } else {
+                // まだタイピング中の時はスキップ不可
+                skipGuide.classList.remove("active");
+                clearCountdown();
+            }
+        }
+
+        function clearCountdown() {
+            countdownText.innerText = "";
+            countdownBar.style.width = "0%";
+            countdownBarBg.style.opacity = "0";
+            if (currentIndex === -1 || currentIndex >= sequence.length - 1) {
+                skipGuide.classList.remove("active");
+            }
+        }
+
+        // 3. バーの途中をクリックしたらシーク
         progressContainer.addEventListener("click", (e) => {
+            if (isGameClear) return;
             const width = progressContainer.clientWidth;
             const clickX = e.offsetX;
             const duration = audio.duration;
             if (duration) {
                 audio.currentTime = (clickX / width) * duration;
+                // シークした瞬間にインデックスを再計算させるためcurrentIndexをリセット
+                currentIndex = -2; 
             }
         });
 
         // 画面表示を更新する関数
         function updateDisplay() {
+            if (isGameClear) return;
+
             const lyricsDiv = document.getElementById("lyrics");
             const displayDiv = document.getElementById("input-display");
 
             if (currentIndex === -1) {
                 lyricsDiv.innerHTML = '<span class="status-msg">▶ボタンを押してスタート！</span>';
                 displayDiv.innerHTML = "";
+                clearCountdown();
                 return;
             }
 
             const currentData = sequence[currentIndex];
-            lyricsDiv.innerText = currentData.text;
+            
+            // 打ち終わっている場合は「OK!」表示を維持
+            if (typedText === currentData.target && currentData.target !== "ready") {
+                lyricsDiv.innerHTML = '<span class="clear-msg">✨ OK! ✨</span>';
+            } else {
+                lyricsDiv.innerText = currentData.text;
+            }
 
             let html = "";
             for (let i = 0; i < currentData.target.length; i++) {
@@ -257,20 +431,71 @@
             displayDiv.innerHTML = html;
         }
 
+        // ゲームクリア画面の表示
+        function showClearScreen() {
+            isGameClear = true;
+            audio.pause();
+            updatePlayButton();
+            
+            clearCountdown();
+            document.getElementById("lyrics").innerHTML = '<span class="clear-msg">🎉 GAME CLEAR! 🎉</span>';
+            document.getElementById("input-display").innerHTML = '<button id="retry-btn" onclick="resetGame()">もう一度遊ぶ</button>';
+            skipGuide.classList.remove("active");
+        }
+
+        // ゲームのリセット（最初から）
+        function resetGame() {
+            isGameClear = false;
+            currentIndex = -1;
+            typedText = "";
+            audio.currentTime = 0;
+            updateDisplay();
+            audio.play();
+            updatePlayButton();
+        }
+
         // キー入力判定
         window.addEventListener("keydown", (e) => {
-            if (currentIndex === -1 || e.key.length > 1) return;
+            if (currentIndex === -1 || isGameClear) return;
+
+            // 💡 スペースキーでのスキップ判定
+            if (e.key === " " || e.key === "Spacebar") {
+                e.preventDefault(); // スクロール防止
+
+                if (typedText === sequence[currentIndex].target || sequence[currentIndex].target === "ready") {
+                    if (currentIndex < sequence.length - 1) {
+                        audio.currentTime = sequence[currentIndex + 1].time;
+                    } else {
+                        showClearScreen();
+                    }
+                }
+                return;
+            }
+
+            if (e.key.length > 1) return;
             
             const currentData = sequence[currentIndex];
+            
+            // 既に打ち終わっているフレーズなら入力を無視
+            if (typedText === currentData.target) return;
+
             const nextChar = currentData.target[typedText.length];
 
             if (e.key.toLowerCase() === (nextChar ? nextChar.toLowerCase() : "")) {
+                // 正解入力
                 typedText += nextChar;
                 updateDisplay();
 
                 if (typedText === currentData.target) {
-                    document.getElementById("lyrics").innerHTML = "✨ OK! ✨";
+                    updateDisplay(); // OK表示にするために呼び出し
+                    updateCountdown(audio.currentTime);
                 }
+            } else {
+                // ❌ タイプミス時のフラッシュエフェクト
+                typingZone.classList.add("miss");
+                setTimeout(() => {
+                    typingZone.classList.remove("miss");
+                }, 100);
             }
         });
 
