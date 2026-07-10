@@ -3,23 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>音楽連動タイピングゲーム</title>
+    <title>DAYBREAK FRONTLINE - タイピングゲーム</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #f0f0f0; margin: 0; padding: 20px; }
-        #audio-container { margin: 20px auto; max-width: 500px; padding: 15px; background: #e0e0e0; border-radius: 8px; }
-        audio { width: 100%; }
-        #typing-zone { margin: 20px auto; padding: 20px; background: white; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        #lyrics { font-size: 24px; font-weight: bold; min-height: 36px; color: #333; }
-        #input-display { font-size: 20px; letter-spacing: 2px; margin-top: 10px; color: #888; }
-        .typed { color: #2196F3; font-weight: bold; }
+        body { 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            text-align: center; 
+            background: #11141a; 
+            color: #ffffff;
+            margin: 0; 
+            padding: 20px; 
+        }
+        h1 {
+            color: #00d2ff;
+            text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            color: #8892b0;
+            font-size: 14px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        #audio-container { 
+            margin: 20px auto; 
+            max-width: 600px; 
+            padding: 15px; 
+            background: #1e222b; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        audio { 
+            width: 100%; 
+        }
+        #typing-zone { 
+            margin: 20px auto; 
+            padding: 30px 20px; 
+            background: #1e222b; 
+            max-width: 600px; 
+            border-radius: 16px; 
+            box-shadow: 0 8px 24px rgba(0, 210, 255, 0.15);
+            border: 1px solid #2d3748;
+        }
+        #lyrics { 
+            font-size: 26px; 
+            font-weight: bold; 
+            min-height: 40px; 
+            color: #ffffff; 
+            margin-bottom: 15px;
+        }
+        #input-display { 
+            font-size: 22px; 
+            letter-spacing: 2px; 
+            font-family: 'Courier New', Courier, monospace;
+            color: #4a5568; 
+            min-height: 30px;
+        }
+        .typed { 
+            color: #00d2ff; 
+            font-weight: bold; 
+            text-shadow: 0 0 8px rgba(0, 210, 255, 0.6);
+        }
+        .status-msg {
+            color: #ff007f;
+            font-weight: bold;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
     </style>
 </head>
 <body>
 
-    <h1>音楽連動タイピング</h1>
-    <p>音楽プレイヤーの再生ボタン（▶）を押すとタイピングが始まります。</p>
+    <h1>DAYBREAK FRONTLINE</h1>
+    <div class="subtitle">Music: Orangestar / Typing Game</div>
 
-    <!-- 音楽プレイヤー（アップロードしたファイル名に合わせました） -->
+    <!-- 音楽プレイヤー -->
     <div id="audio-container">
         <audio id="my-audio" src="bgm.mp3.wav" controls></audio>
     </div>
@@ -31,22 +93,25 @@
     </div>
 
     <script>
-        // 🎼 譜面データ（音楽の再生秒数に合わせて文字が変わります）
-        // 実際の曲のタイミングに合わせて、後から秒数や歌詞を自由に変更できます
+        // 🎼 譜面データ：DAYBREAK FRONTLINEの歌い出し部分
+        // ※音源の無音部分の長さによってズレる場合、time（秒数）を微調整してください
         const sequence = [
-            { time: 1.0, text: "イントロ：タイピングの準備をしてください", target: "ready" },
-            { time: 5.0, text: "音楽に合わせて打ち込んでください", target: "music" },
-            { time: 10.0, text: "学校のタブレットでも動きます！", target: "school" },
-            { time: 15.0, text: "ゲーム終了です！お疲れ様でした", target: "clear" }
+            { time: 1.0,  text: "間奏：タイピングの準備をしてください", target: "ready" },
+            { time: 14.5, text: "最前線飛ばせ僕たちは", target: "saizensentobasebokutachiha" },
+            { time: 18.0, text: "空回る世界の暗がりを駆け抜けろ", target: "karamaruvekaidokuragariwokakenukero" },
+            { time: 22.0, text: "君のいない未来は色のない世界", target: "kiminoinaimiraihairotonaivekai" },
+            { time: 25.5, text: "向かい風等とのとも無い", target: "mukaikazekotonotomonai" },
+            { time: 28.5, text: "一歩引いたってしょうがないだろ？", target: "ippohiitatteshouganaidaro" },
+            { time: 32.5, text: "思いのままに突き進め！", target: "omoinomamanitukisusume" }
         ];
 
         const audio = document.getElementById("my-audio");
         let currentIndex = -1;
         let typedText = "";
 
-        // 音楽の再生状態を監視
+        // 音楽の再生時間をリアルタイム監視
         audio.addEventListener("timeupdate", () => {
-            const currentTime = audio.currentTime; // 現在の再生秒数を取得
+            const currentTime = audio.currentTime;
             
             let foundIndex = -1;
             for (let i = 0; i < sequence.length; i++) {
@@ -62,13 +127,13 @@
             }
         });
 
-        // 画面表示の更新
+        // 画面表示を更新する関数
         function updateDisplay() {
             const lyricsDiv = document.getElementById("lyrics");
             const displayDiv = document.getElementById("input-display");
 
             if (currentIndex === -1) {
-                lyricsDiv.innerText = "音楽が始まるまでお待ちください";
+                lyricsDiv.innerHTML = '<span class="status-msg">▶ボタンを押してスタート！</span>';
                 displayDiv.innerHTML = "";
                 return;
             }
@@ -76,6 +141,7 @@
             const currentData = sequence[currentIndex];
             lyricsDiv.innerText = currentData.text;
 
+            // タイピング済みの文字と未入力の文字で色を分ける
             let html = "";
             for (let i = 0; i < currentData.target.length; i++) {
                 if (i < typedText.length) {
@@ -89,17 +155,20 @@
 
         // キー入力判定
         window.addEventListener("keydown", (e) => {
-            if (currentIndex === -1) return;
+            // 無効なキー（ShiftやCtrlなど）やゲーム開始前は無視
+            if (currentIndex === -1 || e.key.length > 1) return;
             
             const currentData = sequence[currentIndex];
             const nextChar = currentData.target[typedText.length];
 
-            if (e.key === nextChar) {
-                typedText += e.key;
+            // 入力されたキーが合致しているかチェック（小文字で統一）
+            if (e.key.toLowerCase() === nextChar) {
+                typedText += nextChar;
                 updateDisplay();
 
+                // 1フレーズクリアした時のエフェクト
                 if (typedText === currentData.target) {
-                    document.getElementById("lyrics").innerText = "✨ CLEAR! ✨";
+                    document.getElementById("lyrics").innerHTML = "✨ OK! ✨";
                 }
             }
         });
