@@ -25,17 +25,69 @@
             margin-top: 0;
             margin-bottom: 20px;
         }
-        #audio-container { 
+
+        /* 🎧 おしゃれにしたカスタム音楽プレイヤー */
+        #custom-player {
             margin: 20px auto; 
             max-width: 600px; 
-            padding: 15px; 
+            padding: 20px; 
             background: #1e222b; 
             border-radius: 12px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 1px solid #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        audio { 
-            width: 100%; 
+
+        /* 再生・一時停止ボタン */
+        #play-btn {
+            background: #00d2ff;
+            border: none;
+            color: #11141a;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
+            transition: all 0.2s ease;
+            min-width: 80px;
         }
+        #play-btn:hover {
+            background: #00bcd4;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.6);
+            transform: scale(1.03);
+        }
+
+        /* プログレスバー（進行状況の横棒）のコンテナ */
+        #progress-container {
+            flex-grow: 1;
+            background: #2d3748;
+            height: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        /* 音楽が進むと伸びる青いバー */
+        #progress-bar {
+            background: linear-gradient(90deg, #00d2ff, #00f5ff);
+            height: 100%;
+            width: 0%; /* JSで動的に変更します */
+            border-radius: 4px;
+            box-shadow: 0 0 8px #00d2ff;
+            transition: width 0.1s linear;
+        }
+
+        /* 時間表示 */
+        #time-display {
+            font-family: monospace;
+            color: #a0aec0;
+            font-size: 14px;
+            min-width: 45px;
+        }
+
         #typing-zone { 
             margin: 20px auto; 
             padding: 30px 20px; 
@@ -81,9 +133,16 @@
     <h1>DAYBREAK FRONTLINE</h1>
     <div class="subtitle">Music: Orangestar / Typing Game</div>
 
-    <!-- 音楽プレイヤー -->
-    <div id="audio-container">
-        <audio id="my-audio" src="bgm.mp3.wav" controls></audio>
+    <!-- 本物の音楽タグ（画面からはCSSを使わないため見えなくします） -->
+    <audio id="my-audio" src="bgm.mp3.wav"></audio>
+
+    <!-- 🎧 自作したおしゃれな音楽プレイヤー -->
+    <div id="custom-player">
+        <button id="play-btn">PLAY</button>
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <div id="time-display">0:00</div>
     </div>
 
     <!-- タイピング画面 -->
@@ -93,8 +152,6 @@
     </div>
 
     <script>
-        // 🎼 譜面データ：DAYBREAK FRONTLINEの歌い出し部分
-        // ※音源の無音部分の長さによってズレる場合、time（秒数）を微調整してください
         const sequence = [
             { time: 1.0,  text: "間奏：タイピングの準備をしてください", target: "ready" },
             { time: 14.5, text: "最前線飛ばせ僕たちは", target: "saizensentobasebokutachiha" },
@@ -106,13 +163,48 @@
         ];
 
         const audio = document.getElementById("my-audio");
+        const playBtn = document.getElementById("play-btn");
+        const progressBar = document.getElementById("progress-bar");
+        const progressContainer = document.getElementById("progress-container");
+        const timeDisplay = document.getElementById("time-display");
+
         let currentIndex = -1;
         let typedText = "";
 
-        // 音楽の再生時間をリアルタイム監視
+        // 1. 再生・一時停止ボタンのクリック処理
+        playBtn.addEventListener("click", () => {
+            if (audio.paused) {
+                audio.play();
+                playBtn.innerText = "PAUSE";
+                playBtn.style.background = "#ff007f"; // 一時停止時はピンクっぽく
+                playBtn.style.boxShadow = "0 0 10px rgba(255, 0, 127, 0.3)";
+            } else {
+                audio.pause();
+                playBtn.innerText = "PLAY";
+                playBtn.style.background = "#00d2ff"; // 再生時は水色
+                playBtn.style.boxShadow = "0 0 10px rgba(0, 210, 255, 0.3)";
+            }
+        });
+
+        // 2. 音楽の時間更新に合わせて、バーとタイピング画面を動かす
         audio.addEventListener("timeupdate", () => {
             const currentTime = audio.currentTime;
-            
+            const duration = audio.duration || 0;
+
+            // ─── プレイヤーの表示更新 ───
+            // 青いバーの長さをパーセントで計算して伸ばす
+            if (duration > 0) {
+                const progressPercent = (currentTime / duration) * 100;
+                progressBar.style.width = `${progressPercent}%`;
+            }
+
+            // 分:秒 のテキスト表示（例: 0:15）
+            const minutes = Math.floor(currentTime / 60);
+            const seconds = Math.floor(currentTime % 60).toString().padStart(2, '0');
+            timeDisplay.innerText = `${minutes}:${seconds}`;
+
+
+            // ─── タイピング画面の連動 ───
             let foundIndex = -1;
             for (let i = 0; i < sequence.length; i++) {
                 if (currentTime >= sequence[i].time) {
@@ -124,6 +216,16 @@
                 currentIndex = foundIndex;
                 typedText = ""; 
                 updateDisplay();
+            }
+        });
+
+        // 3. バーの途中をクリックしたら、その場所に曲をスキップさせる（おまけ機能）
+        progressContainer.addEventListener("click", (e) => {
+            const width = progressContainer.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audio.duration;
+            if (duration) {
+                audio.currentTime = (clickX / width) * duration;
             }
         });
 
@@ -141,7 +243,6 @@
             const currentData = sequence[currentIndex];
             lyricsDiv.innerText = currentData.text;
 
-            // タイピング済みの文字と未入力の文字で色を分ける
             let html = "";
             for (let i = 0; i < currentData.target.length; i++) {
                 if (i < typedText.length) {
@@ -155,18 +256,15 @@
 
         // キー入力判定
         window.addEventListener("keydown", (e) => {
-            // 無効なキー（ShiftやCtrlなど）やゲーム開始前は無視
             if (currentIndex === -1 || e.key.length > 1) return;
             
             const currentData = sequence[currentIndex];
             const nextChar = currentData.target[typedText.length];
 
-            // 入力されたキーが合致しているかチェック（小文字で統一）
             if (e.key.toLowerCase() === nextChar) {
                 typedText += nextChar;
                 updateDisplay();
 
-                // 1フレーズクリアした時のエフェクト
                 if (typedText === currentData.target) {
                     document.getElementById("lyrics").innerHTML = "✨ OK! ✨";
                 }
