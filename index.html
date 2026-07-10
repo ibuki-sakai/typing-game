@@ -120,7 +120,6 @@
             font-family: monospace;
             text-shadow: 0 0 8px rgba(255, 170, 0, 0.4);
         }
-        /* タイピング中のカウントダウン表示（水色） */
         #countdown-text.typing-now {
             color: #00d2ff;
             text-shadow: 0 0 8px rgba(0, 210, 255, 0.4);
@@ -194,7 +193,7 @@
             transition: color 0.2s ease;
         }
         #skip-guide.active {
-            color: #ffaa00; /* スキップ可能な時（打ち終わった時）だけオレンジに光る */
+            color: #ffaa00; 
         }
 
         /* 🔄 リトライボタン */
@@ -233,7 +232,6 @@
 
     <!-- タイピング画面 -->
     <div id="typing-zone">
-        <!-- ⏳ カウントダウン表示用の枠 -->
         <div id="countdown-container">
             <div id="countdown-text"></div>
             <div id="countdown-bar-bg">
@@ -243,67 +241,98 @@
         
         <div id="lyrics"></div>
         <div id="input-display"></div>
-
-        <!-- ⌨️ スキップのガイド表示 -->
         <div id="skip-guide">[Space] Skip</div>
     </div>
 
     <script>
+        // 【重要】配列の中身を「日本語（ひらがな）」に変更します
+        // プログラムが自動で全てのローマ字パターンをリアルタイム解析します
         const sequence = [
             { time: 0,    text: "間奏：タイピングの準備をしてください", target: "ready" },
-            { time: 42.5, text: "眠れないんだ風もなく茹だりそうな夜に", target: "nemurenaindakazemonakuudarisounayoruni" },
-            { time: 46,   text: "君の声が耳元で揺らいだ感傷に浸ってばっか", target: "kiminokoegamimimotodeyuraidakannshounihitattebakka" },
-            { time: 51,   text: "何も変わらない笑えない日々を", target: "nanimokawaranaiwaraenaihibiwo" },
-            { time: 53,   text: "抜け出そうぜ君を連れ飛び出した", target: "nukedasouzekimiwoturetobidashita" },
+            { time: 42.5, text: "眠れないんだ風もなく茹だりそうな夜に", target: "ねむれないんだかぜもなくうだりそうなよるに" },
+            { time: 46,   text: "君の声が耳元で揺らいだ感傷に浸ってばっか", target: "きみのこえがみみもとでゆらいだかんしょうにひたってばっか" },
+            { time: 51,   text: "何も変わらない笑えない日々を", target: "なにもかわらないわらえないひびを" },
+            { time: 53,   text: "抜け出そうぜ君を連れ飛び出した", target: "ぬけだそうぜきみをつれとびだした" },
         ];
+
+        // ─── 🤖 自動ローマ字マッピング辞書 ───
+        const romanMap = {
+            'あ':['a'],'い':['i','yi'],'う':['u','wu'],'え':['e','ye'],'お':['o'],
+            'か':['ka','ca'],'き':['ki'],'く':['ku','cu','qu'],'け':['ke','cl'],/*cl除外可*/'こ':['ko','co'],
+            'さ':['sa'],'し':['si','shi','ci'],'す':['su'],'せ':['se'],'そ':['so'],
+            'た':['ta'],'ち':['ti','chi'],'つ':['tu','tsu'],'て':['te'],'と':['to'],
+            'な':['na'],'に':['ni'],'ぬ':['nu'],'ね':['ne'],'の':['no'],
+            'は':['ha'],'ひ':['hi'],'ふ':['hu','fu'],'へ':['he'],'ほ':['ho'],
+            'ま':['ma'],'み':['mi'],'む':['mu'],'め':['me'],'も':['mo'],
+            'や':['ya'],'ゆ':['yu'],'よ':['yo'],
+            'ら':['ra'],'り':['ri'],'る':['ru'],'れ':['re'],'ろ':['ro'],
+            'わ':['wa'],'を':['wo'],'ん':['nn','n','xn'],
+            'が':['ga'],'ぎ':['gi'],'ぐ':['gu'],'げ':['ge'],'ご':['go'],
+            'ざ':['za'],'じ':['zi','ji'],'ず':['zu','zu'],
+            'だ':['da'],'ぢ':['di'],'づ':['du'],'で':['de'],'ど':['do'],
+            'ば':['ba'],'び':['bi'],'ぶ':['bu'],'べ':['be'],'ぼ':['bo'],
+            'ぱ':['pa'],'ぴ':['pi'],'ぷ':['pu'],'ぺ':['pe'],'ぽ':['po'],
+            'ぁ':['la','xa'],'ぃ':['li','xi'],'ぅ':['lu','xu'],'ぇ':['le','xe'],'ぉ':['lo','xo'],
+            'ゃ':['lya','xya'],'ゅ':['lyu','xyu'],'ょ':['lyo','xyo'],
+            'っ':['ltu','xtu','ltsu'],
+            'うぁ':['wha'],'うぃ':['whi','wi'],'うぇ':['whe','we'],'うぉ':['who'],
+            'きゃ':['kya'],'きぃ':['kyi'],'きゅ':['kyu'],'きぇ':['kye'],'きょ':['kyo'],
+            'しゃ':['sya','sha'],'しぃ':['syi'],'しゅ':['syu','shu'],'しぇ':['sye','she'],'しょ':['sya','sho'],
+            'ちゃ':['tya','cha'],'ちぃ':['tyi'],'ちゅ':['tyu','chu'],'ちぇ':['tye','che'],'ちょ':['tyo','cho'],
+            'にゃ':['nya'],'にぃ':['nyi'],'にゅ':['nyu'],'にぇ':['nye'],'にょ':['nyo'],
+            'ひゃ':['hya'],'ひぃ':['hyi'],'ひゅ':['hyu'],'ひぇ':['hye'],'ひょ':['hyo'],
+            'みゃ':['mya'],'みぃ':['myi'],'みゅ':['myu'],'みぇ':['mye'],'みょ':['myo'],
+            'りゃ':['rya'],'りぃ':['ryi'],'りゅ':['ryu'],'りぇ':['bye'],'りょ':['ryo'],
+            'ぎゃ':['gya'],'ぎぃ':['gyi'],'ぎゅ':['gyu'],'ぎぇ':['gye'],'ぎょ':['gyo'],
+            'じゃ':['zya','ja'],'じぃ':['zyi'],'じゅ':['zyu','ju'],'じぇ':['zye','je'],'じょ':['zyo','jo'],
+            'びゃ':['bya'],'びぃ':['byi'],'びゅ':['byu'],'びぇ':['bye'],'びょ':['byo'],
+            'ぴゃ':['pya'],'ぴぃ':['pyi'],'ぴゅ':['pyu'],'ぴぇ':['pye'],'ぴょ':['pyo'],
+            'ふぁ':['fa','fwa'],'ふぃ':['fi','fwi'],'ふぇ':['fe','fwe'],'ふぉ':['fo','fwo']
+        };
+
         const audio = document.getElementById("my-audio");
         const playBtn = document.getElementById("play-btn");
         const progressBar = document.getElementById("progress-bar");
         const progressContainer = document.getElementById("progress-container");
         const timeDisplay = document.getElementById("time-display");
         const typingZone = document.getElementById("typing-zone");
-
-        // 要素の取得
         const countdownText = document.getElementById("countdown-text");
         const countdownBar = document.getElementById("countdown-bar");
         const countdownBarBg = document.getElementById("countdown-bar-bg");
         const skipGuide = document.getElementById("skip-guide");
 
         let currentIndex = -1;
-        let typedText = "";
         let isGameClear = false;
+
+        // ─── 🧠 タイピング状態管理オブジェクト ───
+        let currentKanaStr = ""; 
+        let typedRoman = "";     // 入力済みのローマ字
+        let remainingRoman = ""; // 画面表示用のデフォルトの残りローマ字
 
         function updatePlayButton() {
             if (audio.paused) {
                 playBtn.innerText = "PLAY";
                 playBtn.style.background = "#00d2ff"; 
-                playBtn.style.boxShadow = "0 0 10px rgba(0, 210, 255, 0.3)";
             } else {
                 playBtn.innerText = "PAUSE";
                 playBtn.style.background = "#ff007f"; 
-                playBtn.style.boxShadow = "0 0 10px rgba(255, 0, 127, 0.3)";
             }
         }
 
         playBtn.addEventListener("click", () => {
             if (isGameClear) return;
-            if (audio.paused) {
-                audio.play();
-            } else {
-                audio.pause();
-            }
+            if (audio.paused) audio.play();
+            else audio.pause();
             updatePlayButton();
         });
 
         audio.addEventListener("timeupdate", () => {
             if (isGameClear) return;
-
             const currentTime = audio.currentTime;
             const duration = audio.duration || 0;
 
             if (duration > 0) {
-                const progressPercent = (currentTime / duration) * 100;
-                progressBar.style.width = `${progressPercent}%`;
+                progressBar.style.width = `${(currentTime / duration) * 100}%`;
             }
 
             const minutes = Math.floor(currentTime / 60);
@@ -312,34 +341,151 @@
 
             let foundIndex = -1;
             for (let i = 0; i < sequence.length; i++) {
-                if (currentTime >= sequence[i].time) {
-                    foundIndex = i;
-                }
+                if (currentTime >= sequence[i].time) foundIndex = i;
             }
 
             if (foundIndex !== currentIndex) {
                 currentIndex = foundIndex;
-                typedText = ""; 
-                updateDisplay();
+                initPhrase();
             }
-
             updateCountdown(currentTime);
         });
 
-        audio.addEventListener("ended", () => {
-            showClearScreen();
-        });
+        audio.addEventListener("ended", () => { showClearScreen(); });
 
-        // ⏳ カウントダウンとスキップ管理
+        // フレーズが切り替わった時の初期化
+        function initPhrase() {
+            typedRoman = "";
+            remainingRoman = "";
+            if (currentIndex !== -1) {
+                currentKanaStr = sequence[currentIndex].target;
+                if(currentKanaStr !== "ready") {
+                    remainingRoman = makeDefaultRoman(currentKanaStr);
+                } else {
+                    remainingRoman = "ready";
+                }
+            }
+            updateDisplay();
+        }
+
+        // ひらがなからデフォルトの一番標準的なローマ字文字列を生成する
+        function makeDefaultRoman(kana) {
+            let res = "";
+            let i = 0;
+            while(i < kana.length) {
+                if(i+1 < kana.length && romanMap[kana.substr(i,2)]) {
+                    res += romanMap[kana.substr(i,2)][0];
+                    i += 2;
+                } else if(kana[i] === 'っ' && i+1 < kana.length) {
+                    // 次の文字のデフォルトローマ字の頭文字を重ねる
+                    let nextKana = kana[i+1];
+                    let nextRom = romanMap[nextKana] ? romanMap[nextKana][0] : "";
+                    if(nextRom) { res += nextRom[0]; }
+                    else { res += "xtu"; }
+                    i++;
+                } else {
+                    res += romanMap[kana[i]] ? romanMap[kana[i]][0] : kana[i];
+                    i++;
+                }
+            }
+            return res;
+        }
+
+        // 現在の位置から、入力可能なローマ字の全ルートパターンを再帰的に探すコアロジック
+        function checkInput(kanaStr, inputStr) {
+            if (inputStr === "") return { match: true, remainingKana: kanaStr };
+            if (kanaStr === "") return { match: false };
+
+            // 1. 2文字の特殊なひらがな（「きゃ」「ふぁ」など）をチェック
+            if (kanaStr.length >= 2) {
+                let doubleChar = kanaStr.substr(0, 2);
+                if (romanMap[doubleChar]) {
+                    for (let r of romanMap[doubleChar]) {
+                        if (inputStr.startsWith(r)) {
+                            let res = checkInput(kanaStr.substr(2), inputStr.substr(r.length));
+                            if (res.match) return res;
+                        }
+                        if (r.startsWith(inputStr)) {
+                            return { match: true, remainingKana: kanaStr };
+                        }
+                    }
+                }
+            }
+
+            // 2. 1文字のひらがなをチェック
+            let singleChar = kanaStr[0];
+            
+            // 「っ」の特殊判定（子音重ね）
+            if (singleChar === 'っ' && kanaStr.length >= 2) {
+                let nextChar = kanaStr[1];
+                let nextRomans = romanMap[nextChar] || [];
+                for (let nr of nextRomans) {
+                    let firstChar = nr[0]; // 子音の1文字目 (例: t, k, s)
+                    if (inputStr.startsWith(firstChar)) {
+                        // 子音1文字を消費して「っ」を突破し、次は普通にnextChar以降を処理させる
+                        let res = checkInput(kanaStr.substr(1), inputStr.substr(1));
+                        if (res.match) return res;
+                    }
+                    if (firstChar === inputStr) {
+                        return { match: true, remainingKana: kanaStr };
+                    }
+                }
+            }
+
+            // 「ん」の特殊判定（単体nで次が子音の場合）
+            if (singleChar === 'ん' && kanaStr.length >= 2) {
+                let nextChar = kanaStr[1];
+                // 次の文字が母音・あ行・な行・や行以外なら、n単体でも通す
+                if (!['あ','い','う','え','お','な','に','ぬ','ね','の','や','ゆ','よ','ん','ぁ','ぃ','ぅ','ぇ','ぉ','ゃ','ゅ','ょ'].includes(nextChar)) {
+                    if (inputStr.startsWith('n')) {
+                        let res = checkInput(kanaStr.substr(1), inputStr.substr(1));
+                        if (res.match) return res;
+                    }
+                }
+            }
+
+            // 通常の1文字辞書チェック
+            if (romanMap[singleChar]) {
+                for (let r of romanMap[singleChar]) {
+                    if (inputStr.startsWith(r)) {
+                        let res = checkInput(kanaStr.substr(1), inputStr.substr(r.length));
+                        if (res.match) return res;
+                    }
+                    if (r.startsWith(inputStr)) {
+                        return { match: true, remainingKana: kanaStr };
+                    }
+                }
+            }
+
+            // 特殊文字やreadyなどアルファベットそのままの場合
+            if (inputStr.toLowerCase() === singleChar.toLowerCase()) {
+                return { match: true, remainingKana: kanaStr.substr(1) };
+            }
+            if (singleChar.toLowerCase().startsWith(inputStr.toLowerCase())) {
+                return { match: true, remainingKana: kanaStr };
+            }
+
+            return { match: false };
+        }
+
+        function isPhraseComplete() {
+            if (currentIndex === -1) return false;
+            if (currentKanaStr === "ready") return typedRoman === "ready";
+            // 残りのかな文字がない＝打ち終わっている
+            let check = checkInput(currentKanaStr, typedRoman);
+            return check.match && check.remainingKana === "";
+        }
+
         function updateCountdown(currentTime) {
             if (isGameClear || currentIndex === -1) {
                 clearCountdown();
                 return;
             }
 
-            // 最後のフレーズの場合
+            let completed = isPhraseComplete();
+
             if (currentIndex === sequence.length - 1) {
-                if (typedText === sequence[currentIndex].target) {
+                if (completed) {
                     showClearScreen();
                 } else {
                     const duration = audio.duration || sequence[currentIndex].time + 5;
@@ -347,9 +493,7 @@
                     if (timeLeft > 0) {
                         countdownText.innerText = `Finish... ${timeLeft.toFixed(1)}s`;
                         countdownText.classList.add("typing-now");
-                    } else {
-                        clearCountdown();
-                    }
+                    } else { clearCountdown(); }
                 }
                 return;
             }
@@ -365,23 +509,18 @@
                 countdownBar.style.width = `${progressPercent}%`;
                 countdownBarBg.style.opacity = "1";
 
-                // 【スキップ可否による見た目の制御】
-                if (typedText === sequence[currentIndex].target || sequence[currentIndex].target === "ready") {
-                    // スキップ可能（次のフレーズを待っている状態） -> オレンジ
+                if (completed) {
                     skipGuide.classList.add("active");
                     countdownText.innerText = `Next... ${timeLeft.toFixed(1)}s`;
                     countdownText.classList.remove("typing-now");
                     countdownBar.classList.remove("typing-now");
                 } else {
-                    // タイピング中（まだ未完了） -> 水色。ガイドの光は消す
                     skipGuide.classList.remove("active");
                     countdownText.innerText = `Time Limit... ${timeLeft.toFixed(1)}s`;
                     countdownText.classList.add("typing-now");
                     countdownBar.classList.add("typing-now");
                 }
-            } else {
-                clearCountdown();
-            }
+            } else { clearCountdown(); }
         }
 
         function clearCountdown() {
@@ -415,22 +554,23 @@
                 return;
             }
 
+            let completed = isPhraseComplete();
             const currentData = sequence[currentIndex];
             
-            if (typedText === currentData.target && currentData.target !== "ready") {
+            if (completed && currentData.target !== "ready") {
                 lyricsDiv.innerHTML = '<span class="clear-msg">✨ OK! ✨</span>';
             } else {
                 lyricsDiv.innerText = currentData.text;
             }
 
-            let html = "";
-            for (let i = 0; i < currentData.target.length; i++) {
-                if (i < typedText.length) {
-                    html += `<span class="typed">${currentData.target[i]}</span>`;
-                } else {
-                    html += `<span>${currentData.target[i]}</span>`;
-                }
+            // 表示用文字列のアップデート
+            // ユーザーがタイピングした確定部分 + まだ打っていない残りの部分(予測)
+            let check = checkInput(currentKanaStr, typedRoman);
+            if (check.match) {
+                remainingRoman = makeDefaultRoman(check.remainingKana);
             }
+
+            let html = `<span class="typed">${typedRoman}</span><span>${remainingRoman}</span>`;
             displayDiv.innerHTML = html;
         }
 
@@ -438,7 +578,6 @@
             isGameClear = true;
             audio.pause();
             updatePlayButton();
-            
             clearCountdown();
             document.getElementById("lyrics").innerHTML = '<span class="clear-msg">🎉 GAME CLEAR! 🎉</span>';
             document.getElementById("input-display").innerHTML = '<button id="retry-btn" onclick="resetGame()">もう一度遊ぶ</button>';
@@ -447,9 +586,8 @@
         function resetGame() {
             isGameClear = false;
             currentIndex = -1;
-            typedText = "";
             audio.currentTime = 0;
-            updateDisplay();
+            initPhrase();
             audio.play();
             updatePlayButton();
         }
@@ -458,41 +596,35 @@
         window.addEventListener("keydown", (e) => {
             if (currentIndex === -1 || isGameClear) return;
 
-            // 💡 スペースキーでのスキップ
+            // スペースキーでのスキップ
             if (e.key === " " || e.key === "Spacebar") {
-                e.preventDefault(); // 画面スクロール防止
-
-                // 【修正】打ち終わっている状態 or 最初のReady状態のとき「だけ」スキップを許可
-                if (typedText === sequence[currentIndex].target || sequence[currentIndex].target === "ready") {
+                e.preventDefault(); 
+                if (isPhraseComplete()) {
                     if (currentIndex < sequence.length - 1) {
                         audio.currentTime = sequence[currentIndex + 1].time;
                     } else {
                         showClearScreen();
                     }
                 }
-                return; // タイピング中の場合は何もせずスルー
+                return;
             }
 
             if (e.key.length > 1) return;
-            
-            const currentData = sequence[currentIndex];
-            if (typedText === currentData.target) return;
+            if (isPhraseComplete()) return;
 
-            const nextChar = currentData.target[typedText.length];
+            // 仮に新しいキーを追加した文字列を作って検証
+            let testInput = typedRoman + e.key.toLowerCase();
+            let check = checkInput(currentKanaStr, testInput);
 
-            if (e.key.toLowerCase() === (nextChar ? nextChar.toLowerCase() : "")) {
-                typedText += nextChar;
+            if (check.match) {
+                // 有効なルートが存在すれば確定
+                typedRoman = testInput;
                 updateDisplay();
-
-                if (typedText === currentData.target) {
-                    updateDisplay();
-                    updateCountdown(audio.currentTime);
-                }
+                updateCountdown(audio.currentTime);
             } else {
+                // どのルートにも繋がらなければミス
                 typingZone.classList.add("miss");
-                setTimeout(() => {
-                    typingZone.classList.remove("miss");
-                }, 100);
+                setTimeout(() => { typingZone.classList.remove("miss"); }, 100);
             }
         });
 
