@@ -5,305 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DAYBREAK FRONTLINE - タイピングゲーム</title>
     <style>
-        body { 
-            font-family: 'Helvetica Neue', Arial, sans-serif; 
-            text-align: center; 
-            background: #11141a; 
-            color: #ffffff;
-            margin: 0; 
-            padding: 20px; 
-        }
-        h1 {
-            color: #00d2ff;
-            text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
-            font-size: 28px;
-            margin-bottom: 5px;
-        }
-        .subtitle {
-            color: #8892b0;
-            font-size: 14px;
-            margin-top: 0;
-            margin-bottom: 20px;
-        }
-
-        /* 🎧 カスタム音楽プレイヤー */
-        #custom-player {
-            margin: 20px auto; 
-            max-width: 600px; 
-            padding: 20px; 
-            background: #1e222b; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            border: 1px solid #2d3748;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            box-sizing: border-box;
-        }
-
-        #play-btn {
-            background: #00d2ff;
-            border: none;
-            color: #11141a;
-            font-size: 16px;
-            font-weight: bold;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
-            transition: all 0.2s ease;
-            min-width: 80px;
-        }
-        #play-btn:hover {
-            background: #00bcd4;
-            box-shadow: 0 0 15px rgba(0, 210, 255, 0.6);
-            transform: scale(1.03);
-        }
-
-        #progress-container {
-            flex-grow: 1;
-            background: #2d3748;
-            height: 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-        #progress-bar {
-            background: linear-gradient(90deg, #00d2ff, #00f5ff);
-            height: 100%;
-            width: 0%; 
-            border-radius: 4px;
-            box-shadow: 0 0 8px #00d2ff;
-            transition: width 0.1s linear;
-        }
-
-        #time-display {
-            font-family: monospace;
-            color: #a0aec0;
-            font-size: 14px;
-            min-width: 45px;
-        }
-
-        /* ─── タイピングゾーン ─── */
-        #typing-zone { 
-            margin: 20px auto; 
-            padding: 30px 24px 15px 24px;
-            background: #1e222b; 
-            max-width: 600px; 
-            border-radius: 16px; 
-            box-shadow: 0 8px 24px rgba(0, 210, 255, 0.15);
-            border: 1px solid #2d3748;
-            box-sizing: border-box;
-            position: relative;
-            transition: background-color 0.1s ease, border-color 0.1s ease;
-        }
-        /* ミス時の画面揺れ演出 */
-        #typing-zone.miss {
-            background-color: #2d1a22;
-            border-color: #ff0055;
-            box-shadow: 0 8px 24px rgba(255, 0, 85, 0.2);
-            animation: shake 0.1s linear infinite;
-        }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; background: #11141a; color: #ffffff; margin: 0; padding: 20px; }
+        h1 { color: #00d2ff; text-shadow: 0 0 10px rgba(0, 210, 255, 0.5); font-size: 28px; margin-bottom: 5px; }
+        .subtitle { color: #8892b0; font-size: 14px; margin-top: 0; margin-bottom: 20px; }
+        #custom-player { margin: 20px auto; max-width: 600px; padding: 20px; background: #1e222b; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid #2d3748; display: flex; align-items: center; gap: 15px; box-sizing: border-box; }
+        #play-btn { background: #00d2ff; border: none; color: #11141a; font-size: 16px; font-weight: bold; padding: 10px 20px; border-radius: 8px; cursor: pointer; min-width: 80px; transition: all 0.2s; }
+        #progress-container { flex-grow: 1; background: #2d3748; height: 8px; border-radius: 4px; cursor: pointer; position: relative; overflow: hidden; }
+        #progress-bar { background: linear-gradient(90deg, #00d2ff, #00f5ff); height: 100%; width: 0%; box-shadow: 0 0 8px #00d2ff; }
+        #time-display { font-family: monospace; color: #a0aec0; font-size: 14px; min-width: 45px; }
+        #typing-zone { margin: 20px auto; padding: 30px 24px 15px 24px; background: #1e222b; max-width: 600px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0, 210, 255, 0.15); border: 1px solid #2d3748; box-sizing: border-box; position: relative; }
+        #typing-zone.miss { background-color: #2d1a22; border-color: #ff0055; animation: shake 0.1s linear infinite; }
         @keyframes shake {
-            0% { transform: translate(2px, 1px) rotate(0deg); }
-            10deg { transform: translate(-1px, -2px) rotate(-1deg); }
-            20deg { transform: translate(-3px, 0px) rotate(1deg); }
-            30deg { transform: translate(0px, 2px) rotate(0deg); }
-            40deg { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(2px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(2px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
+            0%, 100% { transform: translate(0, 0); }
+            20% { transform: translate(-2px, 1px); }
+            40% { transform: translate(2px, -1px); }
+            60% { transform: translate(-1px, -2px); }
+            80% { transform: translate(1px, 2px); }
         }
-
-        /* 🔥 コンボ表示 */
-        #combo-display {
-            font-size: 20px;
-            font-weight: 900;
-            color: #ffaa00;
-            text-shadow: 0 0 10px rgba(255, 170, 0, 0.6);
-            min-height: 24px;
-            margin-bottom: 5px;
-            opacity: 0;
-            transform: scale(0.5);
-            transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        #combo-display.active {
-            opacity: 1;
-            transform: scale(1);
-        }
-        /* コンボアップ時の跳ねるアニメーション用クラス */
-        .bump {
-            animation: bumpAnim 0.1s ease-out;
-        }
-        @keyframes bumpAnim {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.3); color: #fff; }
-            100% { transform: scale(1); }
-        }
-
-        /* ⏳ カウントダウン表示エリア */
-        #countdown-container {
-            margin-bottom: 15px;
-            min-height: 24px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-        }
-        #countdown-text {
-            font-size: 14px;
-            color: #ffaa00;
-            font-weight: bold;
-            font-family: monospace;
-            text-shadow: 0 0 8px rgba(255, 170, 0, 0.4);
-        }
-        #countdown-text.typing-now {
-            color: #00d2ff;
-            text-shadow: 0 0 8px rgba(0, 210, 255, 0.4);
-        }
-        #countdown-bar-bg {
-            width: 50%;
-            background: #2d3748;
-            height: 4px;
-            border-radius: 2px;
-            overflow: hidden;
-            transition: opacity 0.3s ease;
-        }
-        #countdown-bar {
-            background: #ffaa00;
-            height: 100%;
-            width: 0%;
-            box-shadow: 0 0 6px #ffaa00;
-        }
-        #countdown-bar.typing-now {
-            background: #00d2ff;
-            box-shadow: 0 0 6px #00d2ff;
-        }
-
-        #lyrics { 
-            font-size: 24px; 
-            font-weight: bold; 
-            min-height: 40px; 
-            color: #ffffff; 
-            margin-bottom: 15px;
-            word-break: break-all;
-            line-height: 1.4;
-        }
-        #input-display { 
-            font-size: 20px; 
-            letter-spacing: 1px; 
-            font-family: 'Courier New', Courier, monospace;
-            color: #4a5568; 
-            min-height: 30px;
-            word-break: break-all;
-            line-height: 1.5;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        .typed { 
-            color: #00d2ff; 
-            font-weight: bold; 
-            text-shadow: 0 0 8px rgba(0, 210, 255, 0.6);
-        }
-        .status-msg {
-            color: #00d2ff;
-            font-weight: bold;
-            animation: pulse 1.5s infinite;
-        }
-        .clear-msg {
-            color: #00ffaa;
-            text-shadow: 0 0 10px rgba(0, 255, 170, 0.6);
-        }
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
-        }
-
-        #skip-guide {
-            font-size: 11px;
-            color: #4a5568;
-            text-align: right;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-            transition: color 0.2s ease;
-        }
-        #skip-guide.active {
-            color: #ffaa00; 
-        }
-
-        /* 📊 👑 リザルト画面のスタイル 👑 */
-        .result-container {
-            padding: 10px 0;
-        }
-        .result-title {
-            font-size: 28px;
-            color: #00ffaa;
-            font-weight: bold;
-            text-shadow: 0 0 15px rgba(0, 255, 170, 0.5);
-            margin-bottom: 20px;
-        }
-        .result-rank-box {
-            font-size: 72px;
-            font-weight: 900;
-            margin: 10px 0;
-            text-shadow: 0 0 20px rgba(255,255,255,0.4);
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-        @keyframes popIn {
-            0% { transform: scale(0); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        
-        /* ランク別の色 */
+        #combo-display { font-size: 20px; font-weight: 900; color: #ffaa00; text-shadow: 0 0 10px rgba(255, 170, 0, 0.6); min-height: 24px; margin-bottom: 5px; opacity: 0; }
+        #combo-display.active { opacity: 1; }
+        .bump { animation: bumpAnim 0.1s ease-out; }
+        @keyframes bumpAnim { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); color: #fff; } }
+        #countdown-container { margin-bottom: 15px; min-height: 24px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        #countdown-text { font-size: 14px; color: #ffaa00; font-weight: bold; font-family: monospace; }
+        #countdown-text.typing-now { color: #00d2ff; }
+        #countdown-bar-bg { width: 50%; background: #2d3748; height: 4px; border-radius: 2px; overflow: hidden; opacity: 0; }
+        #countdown-bar { background: #ffaa00; height: 100%; width: 0%; }
+        #countdown-bar.typing-now { background: #00d2ff; }
+        #lyrics { font-size: 24px; font-weight: bold; min-height: 40px; margin-bottom: 15px; }
+        #input-display { font-size: 20px; letter-spacing: 1px; font-family: monospace; color: #4a5568; min-height: 30px; margin-bottom: 15px; }
+        .typed { color: #00d2ff; font-weight: bold; text-shadow: 0 0 8px rgba(0, 210, 255, 0.6); }
+        .status-msg { color: #00d2ff; animation: pulse 1.5s infinite; }
+        .clear-msg { color: #00ffaa; text-shadow: 0 0 10px rgba(0, 255, 170, 0.6); }
+        @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+        #skip-guide { font-size: 11px; color: #4a5568; text-align: right; font-weight: bold; }
+        #skip-guide.active { color: #ffaa00; }
+        .result-title { font-size: 28px; color: #00ffaa; font-weight: bold; margin-bottom: 20px; }
+        .result-rank-box { font-size: 72px; font-weight: 900; margin: 10px 0; }
         .rank-SS { color: #ff007f; text-shadow: 0 0 25px rgba(255, 0, 127, 0.8); }
         .rank-A  { color: #ffaa00; text-shadow: 0 0 20px rgba(255, 170, 0, 0.7); }
         .rank-B  { color: #00d2ff; text-shadow: 0 0 20px rgba(0, 210, 255, 0.7); }
         .rank-C  { color: #a0aec0; }
         .rank-D  { color: #4a5568; }
-
-        .result-table {
-            width: 80%;
-            margin: 20px auto;
-            border-collapse: collapse;
-            font-size: 16px;
-        }
-        .result-table td {
-            padding: 8px 12px;
-            border-bottom: 1px solid #2d3748;
-        }
-        .result-table td:first-child {
-            text-align: left;
-            color: #a0aec0;
-        }
-        .result-table td:last-child {
-            text-align: right;
-            font-family: monospace;
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        #retry-btn {
-            background: #00ffaa;
-            border: none;
-            color: #11141a;
-            padding: 10px 24px;
-            font-weight: bold;
-            font-size: 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 15px;
-            box-shadow: 0 0 12px rgba(0, 255, 170, 0.4);
-            transition: all 0.2s;
-        }
-        #retry-btn:hover {
-            background: #00cc88;
-            transform: scale(1.05);
-        }
+        .result-table { width: 80%; margin: 20px auto; border-collapse: collapse; }
+        .result-table td { padding: 8px 12px; border-bottom: 1px solid #2d3748; }
+        .result-table td:first-child { text-align: left; color: #a0aec0; }
+        .result-table td:last-child { text-align: right; font-weight: bold; }
+        #retry-btn { background: #00ffaa; border: none; color: #11141a; padding: 10px 24px; font-weight: bold; font-size: 16px; border-radius: 6px; cursor: pointer; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -315,39 +63,31 @@
 
     <div id="custom-player">
         <button id="play-btn">PLAY</button>
-        <div id="progress-container">
-            <div id="progress-bar"></div>
-        </div>
+        <div id="progress-container"><div id="progress-bar"></div></div>
         <div id="time-display">0:00</div>
     </div>
 
-    <!-- タイピング画面 -->
     <div id="typing-zone">
-        <!-- 🔥 コンボ数カウンター -->
         <div id="combo-display">0 COMBO</div>
-
         <div id="countdown-container">
             <div id="countdown-text"></div>
-            <div id="countdown-bar-bg">
-                <div id="countdown-bar"></div>
-            </div>
+            <div id="countdown-bar-bg"><div id="countdown-bar"></div></div>
         </div>
-        
         <div id="lyrics"></div>
         <div id="input-display"></div>
         <div id="skip-guide">[Space] Skip</div>
     </div>
 
     <script>
+        // 修正：最初の待機枠のtargetを空文字にして、打たなくて良い仕様に変更
         const sequence = [
-            { time: 0,    text: "間奏：タイピングの準備をしてください", target: "ready" },
+            { time: 0,    text: "【間奏】歌が始まるまでお待ちください", target: "" },
             { time: 42.5, text: "眠れないんだ風もなく茹だりそうな夜に", target: "ねむれないんだかぜもなくうだりそうなよるに" },
             { time: 46,   text: "君の声が耳元で揺らいだ感傷に浸ってばっか", target: "きみのこえがみみもとでゆらいだかんしょうにひたってばっか" },
             { time: 51,   text: "何も変わらない笑えない日々を", target: "なにもかわらないわらえないひびを" },
             { time: 53,   text: "抜け出そうぜ君を連れ飛び出した", target: "ぬけだそうぜきみをつれとびだした" },
         ];
 
-        // 🤖 自動ローマ字マッピング辞書
         const romanMap = {
             'あ':['a'],'い':['i','yi'],'う':['u','wu'],'え':['e','ye'],'お':['o'],
             'か':['ka','ca'],'き':['ki'],'く':['ku','cu','qu'],'け':['ke'],'こ':['ko','co'],
@@ -360,7 +100,7 @@
             'ら':['ra'],'り':['ri'],'る':['ru'],'れ':['re'],'ろ':['ro'],
             'わ':['wa'],'を':['wo'],'ん':['nn','n','xn'],
             'が':['ga'],'ぎ':['gi'],'ぐ':['gu'],'げ':['ge'],'ご':['go'],
-            'ざ':['za'],'じ':['zi','ji'],'ず':['zu'],
+            'ざ':['za'],'じ':['zi','ji'],'ず':['zu','du'],
             'だ':['da'],'ぢ':['di'],'づ':['du'],'で':['de'],'ど':['do'],
             'ば':['ba'],'び':['bi'],'ぶ':['bu'],'べ':['be'],'ぼ':['bo'],
             'ぱ':['pa'],'ぴ':['pi'],'ぷ':['pu'],'ぺ':['pe'],'ぽ':['po'],
@@ -369,7 +109,7 @@
             'っ':['ltu','xtu','ltsu'],
             'うぁ':['wha'],'うぃ':['whi','wi'],'うぇ':['whe','we'],'うぉ':['who'],
             'きゃ':['kya'],'きぃ':['kyi'],'きゅ':['kyu'],'きぇ':['kye'],'きょ':['kyo'],
-            'しゃ':['sya','sha'],'しぃ':['syi'],'しゅ':['syu','shu'],'しぇ':['sye','she'],'しょ':['sho'],
+            'しゃ':['sya','sha'],'しぃ':['syi'],'しゅ':['syu','shu'],'しぇ':['sye','she'],'しょ':['syo','sho'],
             'ちゃ':['tya','cha'],'ちぃ':['tyi'],'ちゅ':['tyu','chu'],'ちぇ':['tye','che'],'ちょ':['tyo','cho'],
             'にゃ':['nya'],'にぃ':['nyi'],'にゅ':['nyu'],'にぇ':['nye'],'にょ':['nyo'],
             'ひゃ':['hya'],'ひぃ':['hyi'],'ひゅ':['hyu'],'ひぇ':['hye'],'ひょ':['hyo'],
@@ -378,7 +118,7 @@
             'ぎゃ':['gya'],'ぎぃ':['gyi'],'ぎゅ':['gyu'],'ぎぇ':['gye'],'ぎょ':['gyo'],
             'じゃ':['zya','ja'],'じぃ':['zyi'],'じゅ':['zyu','ju'],'じぇ':['zye','je'],'じょ':['zyo','jo'],
             'びゃ':['bya'],'びぃ':['byi'],'びゅ':['byu'],'びぇ':['bye'],'びょ':['byo'],
-            'ぴゃ':['pya'],'ぴぃ':['pyi'],'ぴゅ':['pyu'],'ぴぇ':['pye'],'ぴょ':['pyo'],
+            'ぴゃ':['pya'],'ぴぃ':['pyi'],'ぴゅ':['pyu'],'ぴぇ':['pye'],'ぴょ':['po'],
             'ふぁ':['fa','fwa'],'ふぃ':['fi','fwi'],'ふぇ':['fe','fwe'],'ふぉ':['fo','fwo']
         };
 
@@ -394,102 +134,52 @@
         const skipGuide = document.getElementById("skip-guide");
         const comboDisplay = document.getElementById("combo-display");
 
-        let currentIndex = -1;
-        let isGameClear = false;
-
-        // タイピング状態管理
-        let currentKanaStr = ""; 
-        let typedRoman = "";     
-        let remainingRoman = ""; 
-
-        // 📊 スコア・リザルト用データ統計
-        let stats = {
-            goodTypes: 0,
-            missTypes: 0,
-            maxCombo: 0,
-            currentCombo: 0,
-            startTime: 0
-        };
+        let currentIndex = -1, isGameClear = false, currentKanaStr = "", typedRoman = "", remainingRoman = "";
+        let stats = { goodTypes: 0, missTypes: 0, maxCombo: 0, currentCombo: 0, startTime: 0 };
 
         function updatePlayButton() {
-            if (audio.paused) {
-                playBtn.innerText = "PLAY";
-                playBtn.style.background = "#00d2ff"; 
-            } else {
-                playBtn.innerText = "PAUSE";
-                playBtn.style.background = "#ff007f"; 
-            }
+            playBtn.innerText = audio.paused ? "PLAY" : "PAUSE";
+            playBtn.style.background = audio.paused ? "#00d2ff" : "#ff007f";
         }
 
         playBtn.addEventListener("click", () => {
             if (isGameClear) return;
-            if (audio.paused) {
-                audio.play();
-                if(stats.startTime === 0) stats.startTime = Date.now(); // 最初の計測開始
-            } else {
-                audio.pause();
-            }
+            if (audio.paused) { audio.play(); if(stats.startTime === 0) stats.startTime = Date.now(); }
+            else { audio.pause(); }
             updatePlayButton();
         });
 
         audio.addEventListener("timeupdate", () => {
             if (isGameClear) return;
-            const currentTime = audio.currentTime;
-            const duration = audio.duration || 0;
+            const cur = audio.currentTime, dur = audio.duration || 0;
+            if (dur > 0) progressBar.style.width = `${(cur / dur) * 100}%`;
+            timeDisplay.innerText = `${Math.floor(cur / 60)}:${Math.floor(cur % 60).toString().padStart(2, '0')}`;
 
-            if (duration > 0) {
-                progressBar.style.width = `${(currentTime / duration) * 100}%`;
-            }
-
-            const minutes = Math.floor(currentTime / 60);
-            const seconds = Math.floor(currentTime % 60).toString().padStart(2, '0');
-            timeDisplay.innerText = `${minutes}:${seconds}`;
-
-            let foundIndex = -1;
-            for (let i = 0; i < sequence.length; i++) {
-                if (currentTime >= sequence[i].time) foundIndex = i;
-            }
-
-            if (foundIndex !== currentIndex) {
-                currentIndex = foundIndex;
-                initPhrase();
-            }
-            updateCountdown(currentTime);
+            let found = -1;
+            for (let i = 0; i < sequence.length; i++) { if (cur >= sequence[i].time) found = i; }
+            if (found !== currentIndex) { currentIndex = found; initPhrase(); }
+            updateCountdown(cur);
         });
 
         audio.addEventListener("ended", () => { showClearScreen(); });
 
         function initPhrase() {
-            typedRoman = "";
-            remainingRoman = "";
+            typedRoman = ""; remainingRoman = "";
             if (currentIndex !== -1) {
                 currentKanaStr = sequence[currentIndex].target;
-                if(currentKanaStr !== "ready") {
-                    remainingRoman = makeDefaultRoman(currentKanaStr);
-                } else {
-                    remainingRoman = "ready";
-                }
+                remainingRoman = currentKanaStr !== "" ? makeDefaultRoman(currentKanaStr) : "";
             }
             updateDisplay();
         }
 
         function makeDefaultRoman(kana) {
-            let res = "";
-            let i = 0;
+            let res = "", i = 0;
             while(i < kana.length) {
-                if(i+1 < kana.length && romanMap[kana.substr(i,2)]) {
-                    res += romanMap[kana.substr(i,2)][0];
-                    i += 2;
-                } else if(kana[i] === 'っ' && i+1 < kana.length) {
-                    let nextKana = kana[i+1];
-                    let nextRom = romanMap[nextKana] ? romanMap[nextKana][0] : "";
-                    if(nextRom) { res += nextRom[0]; }
-                    else { res += "xtu"; }
-                    i++;
-                } else {
-                    res += romanMap[kana[i]] ? romanMap[kana[i]][0] : kana[i];
-                    i++;
-                }
+                if(i+1 < kana.length && romanMap[kana.substr(i,2)]) { res += romanMap[kana.substr(i,2)][0]; i += 2; }
+                else if(kana[i] === 'っ' && i+1 < kana.length) {
+                    let nextRom = romanMap[kana[i+1]] ? romanMap[kana[i+1]][0] : "";
+                    res += nextRom ? nextRom[0] : "xtu"; i++;
+                } else { res += romanMap[kana[i]] ? romanMap[kana[i]][0] : kana[i]; i++; }
             }
             return res;
         }
@@ -499,282 +189,149 @@
             if (kanaStr === "") return { match: false };
 
             if (kanaStr.length >= 2) {
-                let doubleChar = kanaStr.substr(0, 2);
-                if (romanMap[doubleChar]) {
-                    for (let r of romanMap[doubleChar]) {
-                        if (inputStr.startsWith(r)) {
-                            let res = checkInput(kanaStr.substr(2), inputStr.substr(r.length));
-                            if (res.match) return res;
-                        }
+                let d = kanaStr.substr(0, 2);
+                if (romanMap[d]) {
+                    for (let r of romanMap[d]) {
+                        if (inputStr.startsWith(r)) { let res = checkInput(kanaStr.substr(2), inputStr.substr(r.length)); if (res.match) return res; }
                         if (r.startsWith(inputStr)) return { match: true, remainingKana: kanaStr };
                     }
                 }
             }
 
-            let singleChar = kanaStr[0];
-            
-            if (singleChar === 'っ' && kanaStr.length >= 2) {
-                let nextChar = kanaStr[1];
-                let nextRomans = romanMap[nextChar] || [];
-                for (let nr of nextRomans) {
-                    let firstChar = nr[0];
-                    if (inputStr.startsWith(firstChar)) {
-                        let res = checkInput(kanaStr.substr(1), inputStr.substr(1));
-                        if (res.match) return res;
-                    }
-                    if (firstChar === inputStr) return { match: true, remainingKana: kanaStr };
+            let s = kanaStr[0];
+            if (s === 'っ' && kanaStr.length >= 2) {
+                for (let nr of (romanMap[kanaStr[1]] || [])) {
+                    if (inputStr.startsWith(nr[0])) { let res = checkInput(kanaStr.substr(1), inputStr.substr(1)); if (res.match) return res; }
+                    if (nr[0] === inputStr) return { match: true, remainingKana: kanaStr };
                 }
             }
-
-            if (singleChar === 'ん' && kanaStr.length >= 2) {
-                let nextChar = kanaStr[1];
-                if (!['あ','い','う','え','お','な','に','ぬ','ね','の','や','ゆ','よ','ん','ぁ','ぃ','ぅ','ぇ','ぉ','ゃ','ゅ','ょ'].includes(nextChar)) {
-                    if (inputStr.startsWith('n')) {
-                        let res = checkInput(kanaStr.substr(1), inputStr.substr(1));
-                        if (res.match) return res;
-                    }
+            if (s === 'ん' && kanaStr.length >= 2) {
+                if (!['あ','い','う','え','お','な','に','ぬ','ね','の','や','ゆ','よ','ん','ぁ','ぃ','ぅ','ぇ','ぉ','ゃ','ゅ','ょ'].includes(kanaStr[1])) {
+                    if (inputStr.startsWith('n')) { let res = checkInput(kanaStr.substr(1), inputStr.substr(1)); if (res.match) return res; }
                 }
             }
-
-            if (romanMap[singleChar]) {
-                for (let r of romanMap[singleChar]) {
-                    if (inputStr.startsWith(r)) {
-                        let res = checkInput(kanaStr.substr(1), inputStr.substr(r.length));
-                        if (res.match) return res;
-                    }
+            if (romanMap[s]) {
+                for (let r of romanMap[s]) {
+                    if (inputStr.startsWith(r)) { let res = checkInput(kanaStr.substr(1), inputStr.substr(r.length)); if (res.match) return res; }
                     if (r.startsWith(inputStr)) return { match: true, remainingKana: kanaStr };
                 }
             }
-
-            if (inputStr.toLowerCase() === singleChar.toLowerCase()) {
-                return { match: true, remainingKana: kanaStr.substr(1) };
-            }
-            if (singleChar.toLowerCase().startsWith(inputStr.toLowerCase())) {
-                return { match: true, remainingKana: kanaStr };
-            }
-
+            if (inputStr.toLowerCase() === s.toLowerCase()) return { match: true, remainingKana: kanaStr.substr(1) };
+            if (s.toLowerCase().startsWith(inputStr.toLowerCase())) return { match: true, remainingKana: kanaStr };
             return { match: false };
         }
 
         function isPhraseComplete() {
             if (currentIndex === -1) return false;
-            if (currentKanaStr === "ready") return typedRoman === "ready";
+            if (currentKanaStr === "") return true; // 待機枠は自動的に完了扱い
             let check = checkInput(currentKanaStr, typedRoman);
             return check.match && check.remainingKana === "";
         }
 
-        function updateCountdown(currentTime) {
-            if (isGameClear || currentIndex === -1) {
-                clearCountdown();
-                return;
-            }
-
-            let completed = isPhraseComplete();
+        function updateCountdown(cur) {
+            if (isGameClear || currentIndex === -1) { clearCountdown(); return; }
+            let comp = isPhraseComplete();
 
             if (currentIndex === sequence.length - 1) {
-                if (completed) {
-                    showClearScreen();
-                } else {
-                    const duration = audio.duration || sequence[currentIndex].time + 5;
-                    const timeLeft = duration - currentTime;
-                    if (timeLeft > 0) {
-                        countdownText.innerText = `Finish... ${timeLeft.toFixed(1)}s`;
-                        countdownText.classList.add("typing-now");
-                    } else { clearCountdown(); }
+                if (comp) { showClearScreen(); } 
+                else {
+                    const diff = (audio.duration || sequence[currentIndex].time + 5) - cur;
+                    if (diff > 0) { countdownText.innerText = `Finish... ${diff.toFixed(1)}s`; countdownText.classList.add("typing-now"); } 
+                    else { clearCountdown(); }
                 }
                 return;
             }
 
-            const currentStartTime = sequence[currentIndex].time;
-            const nextStartTime = sequence[currentIndex + 1].time;
-            const timeLeft = nextStartTime - currentTime;
-
-            if (timeLeft > 0) {
-                const totalWaitTime = nextStartTime - currentStartTime;
-                const progressPercent = (timeLeft / totalWaitTime) * 100;
-
-                countdownBar.style.width = `${progressPercent}%`;
+            const start = sequence[currentIndex].time, next = sequence[currentIndex + 1].time, left = next - cur;
+            if (left > 0) {
+                countdownBar.style.width = `${(left / (next - start)) * 100}%`;
                 countdownBarBg.style.opacity = "1";
-
-                if (completed) {
-                    skipGuide.classList.add("active");
-                    countdownText.innerText = `Next... ${timeLeft.toFixed(1)}s`;
-                    countdownText.classList.remove("typing-now");
-                    countdownBar.classList.remove("typing-now");
-                } else {
-                    skipGuide.classList.remove("active");
-                    countdownText.innerText = `Time Limit... ${timeLeft.toFixed(1)}s`;
-                    countdownText.classList.add("typing-now");
-                    countdownBar.classList.add("typing-now");
-                }
+                skipGuide.classList.toggle("active", comp);
+                countdownText.innerText = comp ? `Next... ${left.toFixed(1)}s` : `Time Limit... ${left.toFixed(1)}s`;
+                countdownText.classList.toggle("typing-now", !comp);
+                countdownBar.classList.toggle("typing-now", !comp);
             } else { clearCountdown(); }
         }
 
-        function clearCountdown() {
-            countdownText.innerText = "";
-            countdownBar.style.width = "0%";
-            countdownBarBg.style.opacity = "0";
-            skipGuide.classList.remove("active");
-        }
+        function clearCountdown() { countdownText.innerText = ""; countdownBar.style.width = "0%"; countdownBarBg.style.opacity = "0"; skipGuide.classList.remove("active"); }
 
         progressContainer.addEventListener("click", (e) => {
             if (isGameClear) return;
-            const width = progressContainer.clientWidth;
-            const clickX = e.offsetX;
-            const duration = audio.duration;
-            if (duration) {
-                audio.currentTime = (clickX / width) * duration;
-                currentIndex = -2; 
-            }
+            const dur = audio.duration;
+            if (dur) { audio.currentTime = (e.offsetX / progressContainer.clientWidth) * dur; currentIndex = -2; }
         });
 
         function updateDisplay() {
             if (isGameClear) return;
-
-            const lyricsDiv = document.getElementById("lyrics");
-            const displayDiv = document.getElementById("input-display");
+            const lyricsDiv = document.getElementById("lyrics"), displayDiv = document.getElementById("input-display");
 
             if (currentIndex === -1) {
                 lyricsDiv.innerHTML = '<span class="status-msg">▶ボタンを押してスタート！</span>';
-                displayDiv.innerHTML = "";
-                clearCountdown();
-                comboDisplay.classList.remove("active");
-                return;
+                displayDiv.innerHTML = ""; clearCountdown(); comboDisplay.classList.remove("active"); return;
             }
 
-            let completed = isPhraseComplete();
-            const currentData = sequence[currentIndex];
-            
-            if (completed && currentData.target !== "ready") {
-                lyricsDiv.innerHTML = '<span class="clear-msg">✨ OK! ✨</span>';
-            } else {
-                lyricsDiv.innerText = currentData.text;
-            }
+            lyricsDiv.innerHTML = (isPhraseComplete() && currentKanaStr !== "") ? '<span class="clear-msg">✨ OK! ✨</span>' : sequence[currentIndex].text;
 
             let check = checkInput(currentKanaStr, typedRoman);
-            if (check.match) {
-                remainingRoman = makeDefaultRoman(check.remainingKana);
-            }
+            if (check.match) remainingRoman = makeDefaultRoman(check.remainingKana);
+            displayDiv.innerHTML = `<span class="typed">${typedRoman}</span><span>${remainingRoman}</span>`;
 
-            let html = `<span class="typed">${typedRoman}</span><span>${remainingRoman}</span>`;
-            displayDiv.innerHTML = html;
-
-            // 🔥 コンボ表示の更新
             if (stats.currentCombo >= 3) {
-                comboDisplay.innerText = `${stats.currentCombo} COMBO`;
-                comboDisplay.classList.add("active");
-                // ポップアニメーションをリセットして再発火
-                comboDisplay.classList.remove("bump");
-                void comboDisplay.offsetWidth; 
-                comboDisplay.classList.add("bump");
-            } else {
-                comboDisplay.classList.remove("active");
-            }
+                comboDisplay.innerText = `${stats.currentCombo} COMBO`; comboDisplay.classList.add("active", "bump");
+                setTimeout(() => comboDisplay.classList.remove("bump"), 100);
+            } else { comboDisplay.classList.remove("active"); }
         }
 
-        // 📊 👑 リザルト画面生成ロジック 👑
         function showClearScreen() {
-            isGameClear = true;
-            audio.pause();
-            updatePlayButton();
-            clearCountdown();
-            comboDisplay.classList.remove("active");
+            isGameClear = true; audio.pause(); updatePlayButton(); clearCountdown(); comboDisplay.classList.remove("active");
+            const tot = stats.goodTypes + stats.missTypes, acc = tot > 0 ? ((stats.goodTypes / tot) * 100).toFixed(1) : 0;
+            const wpm = Math.floor(stats.goodTypes / (((Date.now() - stats.startTime) / 1000 / 60) || 1));
 
-            // 計算用データ
-            const totalKeys = stats.goodTypes + stats.missTypes;
-            const accuracy = totalKeys > 0 ? ((stats.goodTypes / totalKeys) * 100).toFixed(1) : 0;
-            
-            // WPM (1分間あたりの打鍵数) 計算
-            const elapsedMinutes = (Date.now() - stats.startTime) / 1000 / 60;
-            const wpm = elapsedMinutes > 0 ? Math.floor(stats.goodTypes / elapsedMinutes) : 0;
+            let rank = "D", rankClass = "rank-D";
+            if (acc >= 98 && wpm >= 200) { rank = "SS"; rankClass = "rank-SS"; }
+            else if (acc >= 95 && wpm >= 150) { rank = "A"; rankClass = "rank-A"; }
+            else if (acc >= 90 && wpm >= 100) { rank = "B"; rankClass = "rank-B"; }
+            else if (acc >= 80) { rank = "C"; rankClass = "rank-C"; }
 
-            // 👑 ランク判定ロジック
-            let rank = "D";
-            let rankClass = "rank-D";
-            if (accuracy >= 98 && wpm >= 200) { rank = "SS"; rankClass = "rank-SS"; }
-            else if (accuracy >= 95 && wpm >= 150) { rank = "A"; rankClass = "rank-A"; }
-            else if (accuracy >= 90 && wpm >= 100) { rank = "B"; rankClass = "rank-B"; }
-            else if (accuracy >= 80) { rank = "C"; rankClass = "rank-C"; }
-
-            // 画面の書き換え
             document.getElementById("lyrics").innerHTML = '<div class="result-title">🎉 RESULTS 🎉</div>';
-            
-            let resultHtml = `
+            document.getElementById("input-display").innerHTML = `
                 <div class="result-container">
                     <div class="result-rank-box ${rankClass}">${rank}</div>
                     <table class="result-table">
                         <tr><td>正解打鍵数 (Good)</td><td>${stats.goodTypes} 回</td></tr>
                         <tr><td>ミス入力 (Miss)</td><td>${stats.missTypes} 回</td></tr>
-                        <tr><td>正確率 (Accuracy)</td><td>${accuracy} %</td></tr>
+                        <tr><td>正確率 (Accuracy)</td><td>${acc} %</td></tr>
                         <tr><td>最高コンボ数 (Max Combo)</td><td>${stats.maxCombo} Combo</td></tr>
                         <tr><td>タイピング速度 (WPM)</td><td>${wpm} 打/分</td></tr>
                     </table>
                     <button id="retry-btn" onclick="resetGame()">もう一度挑戦する</button>
-                </div>
-            `;
-            document.getElementById("input-display").innerHTML = resultHtml;
+                </div>`;
         }
 
         function resetGame() {
-            isGameClear = false;
-            currentIndex = -1;
-            audio.currentTime = 0;
-            
-            // 統計リセット
-            stats = {
-                goodTypes: 0,
-                missTypes: 0,
-                maxCombo: 0,
-                currentCombo: 0,
-                startTime: Date.now()
-            };
-
-            initPhrase();
-            audio.play();
-            updatePlayButton();
+            isGameClear = false; currentIndex = -1; audio.currentTime = 0;
+            stats = { goodTypes: 0, missTypes: 0, maxCombo: 0, currentCombo: 0, startTime: Date.now() };
+            initPhrase(); audio.play(); updatePlayButton();
         }
 
-        // キー入力判定
         window.addEventListener("keydown", (e) => {
             if (currentIndex === -1 || isGameClear) return;
-
-            // スペースキーでのスキップ
             if (e.key === " " || e.key === "Spacebar") {
-                e.preventDefault(); 
-                if (isPhraseComplete()) {
-                    if (currentIndex < sequence.length - 1) {
-                        audio.currentTime = sequence[currentIndex + 1].time;
-                    } else {
-                        showClearScreen();
-                    }
-                }
+                e.preventDefault();
+                if (isPhraseComplete()) { if (currentIndex < sequence.length - 1) audio.currentTime = sequence[currentIndex + 1].time; else showClearScreen(); }
                 return;
             }
+            if (e.key.length > 1 || isPhraseComplete()) return;
 
-            if (e.key.length > 1) return;
-            if (isPhraseComplete()) return;
-
-            let testInput = typedRoman + e.key.toLowerCase();
-            let check = checkInput(currentKanaStr, testInput);
-
+            let test = typedRoman + e.key.toLowerCase(), check = checkInput(currentKanaStr, test);
             if (check.match) {
-                // ⭕ 正解入力
-                typedRoman = testInput;
-                stats.goodTypes++;
-                stats.currentCombo++;
-                if (stats.currentCombo > stats.maxCombo) {
-                    stats.maxCombo = stats.currentCombo;
-                }
-                updateDisplay();
-                updateCountdown(audio.currentTime);
+                typedRoman = test; stats.goodTypes++; stats.currentCombo++;
+                if (stats.currentCombo > stats.maxCombo) stats.maxCombo = stats.currentCombo;
+                updateDisplay(); updateCountdown(audio.currentTime);
             } else {
-                // ❌ ミス入力
-                stats.missTypes++;
-                stats.currentCombo = 0; // コンボが途切れる！
-                
-                typingZone.classList.add("miss");
-                updateDisplay(); // コンボカウンターを即非表示にするため
-                setTimeout(() => { typingZone.classList.remove("miss"); }, 100);
+                stats.missTypes++; stats.currentCombo = 0;
+                typingZone.classList.add("miss"); updateDisplay();
+                setTimeout(() => typingZone.classList.remove("miss"), 100);
             }
         });
 
