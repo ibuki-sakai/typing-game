@@ -38,6 +38,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            box-sizing: border-box; /* 枠線が幅を圧迫しないように */
         }
 
         /* 再生・一時停止ボタン */
@@ -74,7 +75,7 @@
         #progress-bar {
             background: linear-gradient(90deg, #00d2ff, #00f5ff);
             height: 100%;
-            width: 0%; /* JSで動的に変更します */
+            width: 0%; 
             border-radius: 4px;
             box-shadow: 0 0 8px #00d2ff;
             transition: width 0.1s linear;
@@ -88,28 +89,35 @@
             min-width: 45px;
         }
 
+        /* ─── タイピングゾーンの改良 ─── */
         #typing-zone { 
             margin: 20px auto; 
-            padding: 30px 20px; 
+            padding: 30px 24px; 
             background: #1e222b; 
             max-width: 600px; 
             border-radius: 16px; 
             box-shadow: 0 8px 24px rgba(0, 210, 255, 0.15);
             border: 1px solid #2d3748;
+            box-sizing: border-box; /* パディングを含めて最大600pxに収める */
         }
         #lyrics { 
-            font-size: 26px; 
+            font-size: 24px; /* 少しだけ小さくして収まりを良く */
             font-weight: bold; 
             min-height: 40px; 
             color: #ffffff; 
             margin-bottom: 15px;
+            word-break: break-all; /* 日本語や英語が長くなっても強制的に折り返す */
+            line-height: 1.4;
         }
         #input-display { 
-            font-size: 22px; 
-            letter-spacing: 2px; 
+            font-size: 20px; /* ローマ字がはみ出さないように調整 */
+            letter-spacing: 1px; /* 詰まりすぎず広がりすぎず */
             font-family: 'Courier New', Courier, monospace;
             color: #4a5568; 
             min-height: 30px;
+            word-break: break-all; /* 💡ここが重要！長い英字（ローマ字）を枠の端で自動折り返し */
+            line-height: 1.5;
+            text-align: center;
         }
         .typed { 
             color: #00d2ff; 
@@ -173,12 +181,12 @@
             if (audio.paused) {
                 audio.play();
                 playBtn.innerText = "PAUSE";
-                playBtn.style.background = "#ff007f"; // 一時停止時はピンクっぽく
+                playBtn.style.background = "#ff007f"; 
                 playBtn.style.boxShadow = "0 0 10px rgba(255, 0, 127, 0.3)";
             } else {
                 audio.pause();
                 playBtn.innerText = "PLAY";
-                playBtn.style.background = "#00d2ff"; // 再生時は水色
+                playBtn.style.background = "#00d2ff"; 
                 playBtn.style.boxShadow = "0 0 10px rgba(0, 210, 255, 0.3)";
             }
         });
@@ -256,7 +264,6 @@
             const currentData = sequence[currentIndex];
             const nextChar = currentData.target[typedText.length];
 
-            // 念のため双方小文字にして比較
             if (e.key.toLowerCase() === (nextChar ? nextChar.toLowerCase() : "")) {
                 typedText += nextChar;
                 updateDisplay();
@@ -267,7 +274,7 @@
             }
         });
 
-        // 【追加】ページ読み込み時、最初の状態（案内メッセージ）を表示させる
+        // ページ読み込み時の初期表示
         updateDisplay();
     </script>
 </body>
