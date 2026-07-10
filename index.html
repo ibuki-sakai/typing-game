@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>動画連動タイピングゲーム</title>
+    <title>音楽連動タイピングゲーム</title>
     <style>
         body { font-family: sans-serif; text-align: center; background: #f0f0f0; margin: 0; padding: 20px; }
-        #player-container { margin: 20px auto; max-width: 560px; background: #000; min-height: 315px; display: flex; align-items: center; justify-content: center; color: white; }
+        #audio-container { margin: 20px auto; max-width: 500px; padding: 15px; background: #e0e0e0; border-radius: 8px; }
+        audio { width: 100%; }
         #typing-zone { margin: 20px auto; padding: 20px; background: white; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         #lyrics { font-size: 24px; font-weight: bold; min-height: 36px; color: #333; }
         #input-display { font-size: 20px; letter-spacing: 2px; margin-top: 10px; color: #888; }
@@ -15,72 +16,38 @@
 </head>
 <body>
 
-    <h1>動画連動タイピング</h1>
-    <p>動画プレイヤーが表示されたら、再生ボタン（▶）を押してください。</p>
+    <h1>音楽連動タイピング</h1>
+    <p>音楽プレイヤーの再生ボタン（▶）を押すとタイピングが始まります。</p>
 
-    <!-- YouTubeプレイヤーが表示される場所 -->
-    <div id="player-container">
-        <div id="player">動画を読み込み中...</div>
+    <!-- 音楽プレイヤー（アップロードしたファイル名に合わせました） -->
+    <div id="audio-container">
+        <audio id="my-audio" src="bgm.mp3.wav" controls></audio>
     </div>
 
     <!-- タイピング画面 -->
     <div id="typing-zone">
-        <div id="lyrics">動画を再生してください</div>
+        <div id="lyrics">音楽を再生してください</div>
         <div id="input-display"></div>
     </div>
 
-    <!-- YouTube Iframe API の読み込み -->
-    <script src="https://youtube.com"></script>
-
     <script>
-        // 譜面データ（動画の再生秒数に合わせて文字が変わります）
+        // 🎼 譜面データ（音楽の再生秒数に合わせて文字が変わります）
+        // 実際の曲のタイミングに合わせて、後から秒数や歌詞を自由に変更できます
         const sequence = [
             { time: 1.0, text: "イントロ：タイピングの準備をしてください", target: "ready" },
-            { time: 18.0, text: "歌が始まります！", target: "start" },
-            { time: 19.0, text: "We're no strangers to love", target: "love" },
-            { time: 23.0, text: "You know the rules and so do I", target: "rules" }
+            { time: 5.0, text: "音楽に合わせて打ち込んでください", target: "music" },
+            { time: 10.0, text: "学校のタブレットでも動きます！", target: "school" },
+            { time: 15.0, text: "ゲーム終了です！お疲れ様でした", target: "clear" }
         ];
 
-        let player;
+        const audio = document.getElementById("my-audio");
         let currentIndex = -1;
         let typedText = "";
 
-        // YouTubeプレイヤーの初期化
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player', {
-                height: '315',
-                width: '560',
-                videoId: 'dQw4w9WgXcQ', // 確実に再生できる公式動画ID
-                playerVars: {
-                    'playsinline': 1,
-                    'rel': 0
-                },
-                events: {
-                    'onStateChange': onPlayerStateChange,
-                    'onError': onPlayerError
-                }
-            });
-        }
-
-        // エラーが起きた場合の通知
-        function onPlayerError(e) {
-            document.getElementById('player').innerText = "動画の読み込みに失敗しました。ページを再読み込みしてください。";
-            console.error("YouTube Error Code:", e.data);
-        }
-
-        // 動画の再生状態を監視
-        let timerId;
-        function onPlayerStateChange(event) {
-            if (event.data == YT.PlayerState.PLAYING) {
-                timerId = setInterval(checkTime, 100);
-            } else {
-                clearInterval(timerId);
-            }
-        }
-
-        // 再生時間と譜面の照合
-        function checkTime() {
-            const currentTime = player.getCurrentTime();
+        // 音楽の再生状態を監視
+        audio.addEventListener("timeupdate", () => {
+            const currentTime = audio.currentTime; // 現在の再生秒数を取得
+            
             let foundIndex = -1;
             for (let i = 0; i < sequence.length; i++) {
                 if (currentTime >= sequence[i].time) {
@@ -93,7 +60,7 @@
                 typedText = ""; 
                 updateDisplay();
             }
-        }
+        });
 
         // 画面表示の更新
         function updateDisplay() {
@@ -101,7 +68,7 @@
             const displayDiv = document.getElementById("input-display");
 
             if (currentIndex === -1) {
-                lyricsDiv.innerText = "動画が始まるまでお待ちください";
+                lyricsDiv.innerText = "音楽が始まるまでお待ちください";
                 displayDiv.innerHTML = "";
                 return;
             }
