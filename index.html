@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>動画連動タイピングゲーム</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #f0f0f0; margin: 0; padding: 20px; }
+        #player-container { margin: 20px auto; max-width: 560px; }
+        #typing-zone { margin: 20px auto; padding: 20px; background: white; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        #lyrics { font-size: 24px; font-weight: bold; min-height: 36px; color: #333; }
+        #input-display { font-size: 20px; letter-spacing: 2px; margin-top: 10px; color: #888; }
+        .typed { color: #2196F3; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>動画連動タイピング</h1>
+    <p>動画を再生すると、タイミングを合わせて文字が表示されます。英語でタイピングしてください。</p>
+
+    <!-- YouTubeプレイヤーが表示される場所 -->
+    <div id="player-container">
+        <div id="player"></div>
+    </div>
+
+    <!-- タイピング画面 -->
+    <div id="typing-zone">
+        <div id="lyrics">動画を再生してください</div>
+        <div id="input-display"></div>
+    </div>
+
+    <!-- YouTube Iframe API の読み込み -->
+    <script src="https://youtube.com"></script>
+
+    <script>
+        // 1. 譜面データ（秒数、表示テキスト、タイピングする文字列）
+        // ※サンプルとして、YouTube公式のAudioライブラリ等でよく使われる動画IDを想定
+        const sequence = [
+            { time: 2.0, text: "こんにちは！タイピングを開始します", target: "hello" },
+            { time: 6.0, text: "動画の秒数と連動しています", target: "youtube" },
+            { time: 10.0, text: "うまく打ち込めましたか？", target: "typing" },
+            { time: 14.0, text: "ゲーム終了です！お疲れ様でした", target: "clear" }
+        ];
+
+        let player;
+        let currentIndex = -1;
+        let typedText = "";
+
+        // 2. YouTubeプレイヤーの初期化（APIから自動で呼ばれる関数）
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '315',
+                width: '560',
+                videoId: 'dQw4w9WgXcQ', // 任意のYouTube動画IDに変更してください
+                events: {
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        // 3. 動画の再生状態を監視するループ設定
+        let timerId;
+        function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.PLAYING) {
+                // 再生中なら100ミリ秒ごとに時間をチェック
+                timerId = setInterval(checkTime, 100);
+            } else {
+                clearInterval(timerId);
+            }
+        }
+
+        // 4. 再生時間と譜面データの照合
+        function checkTime() {
+            const currentTime = player.getCurrentTime();
+            
+            // 現在の秒数に合うフレーズを探す
+            let foundIndex = -1;
+            for (let i = 0; i < sequence.length; i++) {
+                if (currentTime >= sequence[i].time) {
+                    foundIndex = i;
+                }
+            }
+
+            // 新しいフレーズに切り替わった場合の処理
+            if (foundIndex !== currentIndex) {
+                currentIndex = foundIndex;
+                typedText = ""; // 入力履歴をリセット
+                updateDisplay();
+            }
+        }
+
+        // 5. 画面表示の更新
+        function updateDisplay() {
+            const lyricsDiv = document.getElementById("lyrics");
+            const displayDiv = document.getElementById("input-display");
+
+            if (currentIndex === -1) {
+                lyricsDiv.innerText = "動画が始まるまでお待ちください";
+                displayDiv.innerHTML = "";
+                return;
+            }
+
+            const currentData = sequence[currentIndex];
+            lyricsDiv.innerText = currentData.text;
+
+            // タイピング中/未入力の文字に色付けするHTMLを生成
+            let html = "";
+            for (let i = 0; i < currentData.target.length; i++) {
+                if (i < typedText.length) {
+                    html += `<span class="typed">${currentData.target[i]}</span>`;
+                } else {
+                    html += `<span>${currentData.target[i]}</span>`;
+                }
+            }
+            displayDiv.innerHTML = html;
+        }
+
+        // 6. キー入力の判定
+        window.addEventListener("keydown", (e) => {
+            if (currentIndex === -1) return;
+            
+            const currentData = sequence[currentIndex];
+            const nextChar = currentData.target[typedText.length];
+
+            // 押されたキーが、次に打つべき文字と一致しているかチェック
+            if (e.key === nextChar) {
+                typedText += e.key;
+                updateDisplay();
+
+                // 1フレーズ打ち終わった時の処理
+                if (typedText === currentData.target) {
+                    document.getElementById("lyrics").innerText = "✨ CLEAR! ✨";
+                }
+            }
+        });
+    </script>
+</body>
+</html>
