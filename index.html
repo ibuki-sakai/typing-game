@@ -8,11 +8,15 @@
         body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; background: #11141a; color: #ffffff; margin: 0; padding: 20px; }
         h1 { color: #00d2ff; text-shadow: 0 0 10px rgba(0, 210, 255, 0.5); font-size: 28px; margin-bottom: 5px; }
         .subtitle { color: #8892b0; font-size: 14px; margin-top: 0; margin-bottom: 20px; }
-        #custom-player { margin: 20px auto; max-width: 600px; padding: 20px; background: #1e222b; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid #2d3748; display: flex; align-items: center; gap: 15px; box-sizing: border-box; }
+        #custom-player { margin: 20px auto; max-width: 600px; padding: 20px; background: #1e222b; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid #2d3748; display: flex; align-items: center; gap: 12px; box-sizing: border-box; flex-wrap: wrap; }
         #play-btn { background: #00d2ff; border: none; color: #11141a; font-size: 16px; font-weight: bold; padding: 10px 20px; border-radius: 8px; cursor: pointer; min-width: 80px; transition: all 0.2s; }
-        #progress-container { flex-grow: 1; background: #2d3748; height: 8px; border-radius: 4px; cursor: pointer; position: relative; overflow: hidden; }
+        #progress-container { flex-grow: 1; min-width: 120px; background: #2d3748; height: 8px; border-radius: 4px; cursor: pointer; position: relative; overflow: hidden; }
         #progress-bar { background: linear-gradient(90deg, #00d2ff, #00f5ff); height: 100%; width: 0%; box-shadow: 0 0 8px #00d2ff; }
         #time-display { font-family: monospace; color: #a0aec0; font-size: 14px; min-width: 45px; }
+        #speed-wrap { display: flex; align-items: center; gap: 6px; }
+        #speed-label { font-size: 12px; color: #8892b0; font-weight: bold; }
+        #speed-select { background: #2d3748; color: #00d2ff; border: 1px solid #4a5568; border-radius: 6px; padding: 6px 8px; font-weight: bold; font-size: 13px; cursor: pointer; }
+        #speed-select:focus { outline: 2px solid #00d2ff; }
         #typing-zone { margin: 20px auto; padding: 30px 24px 15px 24px; background: #1e222b; max-width: 600px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0, 210, 255, 0.15); border: 1px solid #2d3748; box-sizing: border-box; position: relative; }
         #typing-zone.miss { background-color: #2d1a22; border-color: #ff0055; animation: shake 0.1s linear infinite; }
         @keyframes shake {
@@ -65,6 +69,17 @@
         <button id="play-btn">PLAY</button>
         <div id="progress-container"><div id="progress-bar"></div></div>
         <div id="time-display">0:00</div>
+        <div id="speed-wrap">
+            <span id="speed-label">速度</span>
+            <select id="speed-select">
+                <option value="0.5">0.5x</option>
+                <option value="0.75">0.75x</option>
+                <option value="1" selected>1.0x</option>
+                <option value="1.25">1.25x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2">2.0x</option>
+            </select>
+        </div>
     </div>
 
     <div id="typing-zone">
@@ -197,9 +212,21 @@
         const countdownBarBg = document.getElementById("countdown-bar-bg");
         const skipGuide = document.getElementById("skip-guide");
         const comboDisplay = document.getElementById("combo-display");
+        const speedSelect = document.getElementById("speed-select");
 
         let currentIndex = -1, isGameClear = false, currentKanaStr = "", typedRoman = "", remainingRoman = "";
         let stats = { goodTypes: 0, missTypes: 0, maxCombo: 0, currentCombo: 0, startTime: 0 };
+
+        // 🌟 再生速度：初期値は1.0倍。ピッチが不自然に変わらないようpreservesPitchを有効化
+        audio.playbackRate = 1.0;
+        audio.preservesPitch = true;
+        audio.mozPreservesPitch = true;
+        audio.webkitPreservesPitch = true;
+
+        speedSelect.addEventListener("change", () => {
+            // 再生中・停止中どちらでも即座に速度を反映（歌詞の出現タイミングは audio.currentTime 基準なのでズレない）
+            audio.playbackRate = parseFloat(speedSelect.value);
+        });
 
         function updatePlayButton() {
             playBtn.innerText = audio.paused ? "PLAY" : "PAUSE";
@@ -399,6 +426,7 @@
                         <tr><td>正確率 (Accuracy)</td><td>${acc} %</td></tr>
                         <tr><td>最高コンボ数 (Max Combo)</td><td>${stats.maxCombo} Combo</td></tr>
                         <tr><td>タイピング速度 (WPM)</td><td>${wpm} 打鍵/分</td></tr>
+                        <tr><td>再生速度</td><td>${audio.playbackRate}x</td></tr>
                     </table>
                     <button id="retry-btn" onclick="resetGame()">もう一度挑戦する</button>
                 </div>`;
@@ -407,6 +435,8 @@
         function resetGame() {
             isGameClear = false; currentIndex = -1; audio.currentTime = 0;
             stats = { goodTypes: 0, missTypes: 0, maxCombo: 0, currentCombo: 0, startTime: Date.now() };
+            // 🌟 選択中の再生速度は維持したまま再スタート
+            audio.playbackRate = parseFloat(speedSelect.value);
             initPhrase(); audio.play(); updatePlayButton();
         }
 
@@ -433,14 +463,5 @@
 
         updateDisplay();
     </script>
-    <!-- 既存のコードの一番下あたり -->
-    <script>
-        // 元々あったゲームの長いJavaScriptコード...
-    </script>
-    
-    <!-- 🌟 ここにこの1行を追加！ -->
-    <script src="debug.js"></script>
-</body>
-</html>
 </body>
 </html>
