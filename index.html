@@ -132,12 +132,12 @@
             { time: 123.0, text: "なんて拭えない想いもアクセルへ", target: "なんてぬぐえないおもいはあくせるへ" },
             { time: 125.5, text: "どうせ止まれるはずないさ", target: "どうせとまれるはずないさ" },
             { time: 127.0, text: "夜に腐っていたって僕たちは", target: "よるにくさっていたってぼくたちは" },
-            { time: 134.0, text: "間違いなく明日に向かっていく", target: "まちがいなくあすにむかっていく" },
+            { time: 134.0, text: "間違いなく明日に向かっていく", target: "まちがいなくあしたにむかっていく" },
             
             // ─── 2番サビ ───
             { time: 155.0, text: "最前線飛ばせ僕たちは 白みだした星空", target: "さいぜんせんとばせぼくたちはしろみだしたほしぞら" },
             { time: 158, text: "胸を鳴らしている眠らないよう", target: "むねをならしているねむらないよう" },
-            { time: 161, text: "上がるミュージックと ぬるくなった水だけ持って行く", target: "あがるみゅ-じっくとぬるくなったみずだけもっていく" },
+            { time: 161, text: "上がるミュージックと ぬるくなった水だけ持って行く", target: "あがるみゅーじっくとぬるくなったみずだけもっていく" },
             { time: 164, text: "無駄なものは何もないさ 前を向け", target: "むだなものはなにもないさまえをむけ" },
             { time: 168, text: "その方がきっと笑えるさって", target: "そのほうがきっとわらえるさって" },
             
@@ -167,7 +167,7 @@
     'だ':['da'],'ぢ':['di','dhi'],'づ':['du'],'で':['de'],'ど':['do'],
     'ば':['ba'],'び':['bi'],'ぶ':['bu'],'べ':['be'],'ぼ':['bo'],
     'ぱ':['pa'],'ぴ':['pi'],'ぷ':['pu'],'ぺ':['pe'],'ぽ':['po'],
-    'ゔ':['vu'],'-':['-'],
+    'ゔ':['vu'],
 
     // 小書き文字（単体入力）
     'ぁ':['la','xa'],'ぃ':['li','xi'],'ぅ':['lu','xu'],'ぇ':['le','xe'],'ぉ':['lo','xo'],
@@ -440,8 +440,27 @@
             initPhrase(); audio.play(); updatePlayButton();
         }
 
+        // 🌟 日本語IME(かな入力)がオンだとローマ字キーが正しく拾えないため、
+        // 変換中は画面に警告を出して気づけるようにする
+        let imeComposing = false;
+        window.addEventListener("compositionstart", () => {
+            imeComposing = true;
+            skipGuide.innerText = "⚠️ IMEがオンの可能性があります。半角英数(直接入力)に切り替えてください";
+            skipGuide.classList.add("active");
+        });
+        window.addEventListener("compositionend", () => {
+            imeComposing = false;
+            skipGuide.innerText = "[Space] Skip";
+            skipGuide.classList.remove("active");
+        });
+
         window.addEventListener("keydown", (e) => {
             if (currentIndex === -1 || isGameClear) return;
+            // 🌟 キーを押しっぱなしにした時のOSオートリピートは無視する
+            //    (これを弾かないと、少し長押しした1打が2〜3打として送られてきてミス判定になるバグの原因になる)
+            if (e.repeat) return;
+            // 🌟 IME変換中のキーイベントは実際の文字と食い違うので無視する
+            if (e.isComposing || imeComposing) return;
             if (e.key === " " || e.key === "Spacebar") {
                 e.preventDefault();
                 if (isPhraseComplete()) { if (currentIndex < sequence.length - 1) audio.currentTime = sequence[currentIndex + 1].time; else showClearScreen(); }
