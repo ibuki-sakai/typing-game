@@ -16,11 +16,11 @@
         #typing-zone { margin: 20px auto; padding: 30px 24px 15px 24px; background: #1e222b; max-width: 600px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0, 210, 255, 0.15); border: 1px solid #2d3748; box-sizing: border-box; position: relative; }
         #typing-zone.miss { background-color: #2d1a22; border-color: #ff0055; animation: shake 0.1s linear infinite; }
         @keyframes shake {
-            0%, 100% { transform: translate(0, 0); }
-            20% { transform: translate(-2px, 1px); }
-            40% { transform: translate(2px, -1px); }
-            60% { transform: translate(-1px, -2px); }
-            80% { transform: translate(1px, 2px); }
+            0%, 100     { transform: translate(0, 0); }
+            20%  { transform: translate(-2px, 1px); }
+            40%  { transform: translate(2px, -1px); }
+            60%  { transform: translate(-1px, -2px); }
+            80%  { transform: translate(1px, 2px); }
         }
         #combo-display { font-size: 20px; font-weight: 900; color: #ffaa00; text-shadow: 0 0 10px rgba(255, 170, 0, 0.6); min-height: 24px; margin-bottom: 5px; opacity: 0; }
         #combo-display.active { opacity: 1; }
@@ -81,19 +81,19 @@
     <script>
         const sequence = [
             // ─── 1番Aメロ〜Bメロ ───
-            { time: 0,     text: "【間奏】歌が始まるまでお待ちください", target: "" },
+            { time: 0,    text: "【間奏】歌が始まるまでお待ちください", target: "" },
             { time: 42.5,  text: "眠れないんだ風もなく茹だりそうな夜に", target: "ねむれないんだかぜもなくうだりそうなよるに" },
             { time: 46.5,  text: "君の声が耳元で揺らいだ 感傷に浸ってばっか", target: "きみのこえがみみもとでゆらいだかんしょうにひたってばっか" },
-            { time: 51.5,  text: "何も変わらない笑えない日々を抜け出そうぜ", target: "なともかわらないわらえないひびをぬけだそうぜ" },
+            { time: 51.5,  text: "何も変わらない笑えない日々を抜け出そうぜ", target: "なにもかわらないわらえないひびをぬけだそうぜ" },
             { time: 54.5,  text: "君を連れ飛び出した", target: "きみをつれとびだした" },
             { time: 57.0,  text: "風が通り過ぎた 闇と混ざり合った", target: "かぜがとおりすぎたやみとまざりあった" },
             { time: 61.5,  text: "君の笑い声が小さく藍の空に響いて", target: "きみのわらいごえがちいさくあいのそらにひびいて" },
             { time: 65.0,  text: "そんなんで生きていけんのかもう戻れないぜ？", target: "そんなんでいきていけんのかもうもどれないぜ" },
-            { time: 68.0,  text: "なんて揺らぎそうな想いはアクセルへ", target: "なんてゆらぎそうなおもいわあくせるへ" },
+            { time: 68.0,  text: "なんて揺らぎそうな想いはアクセルへ", target: "なんてゆらぎそうなおもいはあくせるへ" },
             { time: 71.5,  text: "このまま地平線を追い越してやるんだ", target: "このままちへいせんをおいこしてやるんだ" },
             
             // ─── 1番サビ ───
-            { time: 76.5,  text: "最前線飛ばせ僕たちは", target: "さいぜんせんとばせぼくたちわ" },
+            { time: 76.5,  text: "最前線飛ばせ僕たちは", target: "さいぜんせんとばせぼくたちは" },
             { time: 79.5,  text: "星もない夜ただ東を目指して行く", target: "ほしもないよるただひがしをめざしていく" },
             { time: 82.5,  text: "13秒先もわかんなくたって", target: "じゅうさんびょうさきもわかんなくたって" },
             { time: 85.5,  text: "精一杯僕を生きていく", target: "せいいっぱいぼくをいきていく" },
@@ -104,7 +104,7 @@
             { time: 97.0,  text: "【間奏】2番の始まりまでお待ちください", target: "" },
             { time: 111.0, text: "暗闇に落ちた 先の見えないような道も", target: "くらやみにおちたさきのみえないようなみちも" },
             { time: 116.0, text: "辿り着いたら 闇なんてなかった", target: "たどりついたらやみなんてなかった" },
-            { time: 121.5, text: "きっと僕は僕を信じ切っちゃいないから", target: "きっとぼくわぼくをしんじきっちゃいないから" },
+            { time: 121.5, text: "きっと僕は僕を信じ切っちゃいないから", target: "きっとぼくはぼくをしんじきっちゃいないから" },
             { time: 125.0, text: "いっそあの向こうへ", target: "いっそあのむこうへ" },
             { time: 127.5, text: "未だ見ぬ夜明けを信じ歩いた", target: "いまだみぬよあけをしんじあるいた" },
             
@@ -112,36 +112,35 @@
             { time: 131.5, text: "追い抜いた走った期待した転んだ", target: "おいぬいたはしったきたいたころんだ" },
             { time: 134.5, text: "迷ったわかんなくなったでもjust feel alive", target: "まよったわかんなくなったでもjustfeelalive" },
             { time: 138.5, text: "Fear or light", target: "fearorlight" },
-            { time: 141.5, text: "まだ僕らは歩いていく", target: "まだぼくらわあるいていく" },
+            { time: 141.5, text: "まだ僕らは歩いていく", target: "まだぼくらはあるいていく" },
             { time: 143.5, text: "こんなんじゃいつまで経っても何処にも行けやしないさ", target: "こんなんじゃいつまでたってもどこにもいけやしないさ" },
-            { time: 147.0, text: "なんて拭えない想いもアクセルへ", target: "なんてぬぐえないおもいわあくせるへ" },
+            { time: 147.0, text: "なんて拭えない想いもアクセルへ", target: "なんてぬぐえないおもいはあくせるへ" },
             { time: 150.5, text: "どうせ止まれるはずないさ", target: "どうせとまれるはずないさ" },
-            { time: 153.0, text: "夜に腐っていたって僕たちは", target: "よるにくさっていたってぼくたちわ" },
+            { time: 153.0, text: "夜に腐っていたって僕たちは", target: "よるにくさっていたってぼくたちは" },
             { time: 156.0, text: "間違いなく明日に向かっていく", target: "まちがいなくあしたにむかっていく" },
             
             // ─── 2番サビ ───
-            { time: 161.0, text: "最前線飛ばせ僕たちは 白みだした星空", target: "さいぜんせんとばせぼくたちわしろみだしたほしぞら" },
+            { time: 161.0, text: "最前線飛ばせ僕たちは 白みだした星空", target: "さいぜんせんとばせぼくたちはしろみだしたほしぞら" },
             { time: 164.5, text: "胸を鳴らしている眠らないよう", target: "むねをならしているねむらないよう" },
             { time: 167.5, text: "上がるミュージックと ぬるくなった水だけ持って行く", target: "あがるみゅーじっくとぬるくなったみずだけもっていく" },
-            { time: 172.5, text: "無駄なものは何もないさ 前を向け", target: "むだなものわなにもないさまえをむけ" },
+            { time: 172.5, text: "無駄なものは何もないさ 前を向け", target: "むだなものはなにもないさまえをむけ" },
             { time: 175.5, text: "その方がきっと笑えるさって", target: "そのほうがきっとわらえるさって" },
             
             // ─── 大サビ ───
-            { time: 178.5, text: "最前線飛ばせ僕たちは昇る太陽その光を目指して行く", target: "さいぜんせんとばせぼくたちわのぼるたいようそのひかりをめざしていく" },
-            { time: 184.0, text: "幸せって今はわかんなくたって 精一杯僕を生きていく", target: "しあわせっていまわわかんなくたってせいいっぱいぼくをいきていく" },
+            { time: 178.5, text: "最前線飛ばせ僕たちは昇る太陽その光を目指して行く", target: "さいぜんせんとばせぼくたちはのぼるたいようそのひかりをめざしていく" },
+            { time: 184.0, text: "幸せって今はわかんなくたって 精一杯僕を生きていく", target: "しあわせっていまはわかんなくたってせいいっぱいぼくをいきていく" },
             { time: 190.0, text: "何も後悔なんてないさ 前を向け", target: "なにもこうかいなんてないさまえをむけ" },
-            { time: 194.5, text: "終わらないさ 一生僕らは生きて征け", target: "おわらないさいっしょうぼくらわいきてゆけ" },
+            { time: 194.5, text: "終わらないさ 一生僕らは生きて征け", target: "おわらないさいっしょうぼくらはいきてゆけ" },
             { time: 200.0, text: "【間奏】アウトロ", target: "" }
         ];
 
-        // ※あなたが修正してくれた最新のローマ字表が入る場所
         const romanMap = {
             'あ':['a'],'い':['i','yi'],'う':['u','wu'],'え':['e','ye'],'お':['o'],
             'か':['ka','ca'],'き':['ki'],'く':['ku','cu','qu'],'け':['ke'],'こ':['ko','co'],
             'さ':['sa'],'し':['si','shi','ci'],'す':['su'],'せ':['se'],'そ':['so'],
             'た':['ta'],'ち':['ti','chi'],'つ':['tu','tsu'],'て':['te'],'と':['to'],
             'な':['na'],'に':['ni'],'ぬ':['nu'],'ね':['ne'],'の':['no'],
-            'は':['ha'],'ひ':['hi'],'ふ':['hu','fu'],'へ':['he'],'ほ':['ho'],
+            'は':['ha','wa'],'ひ':['hi'],'ふ':['hu','fu'],'へ':['he'],'ほ':['ho'],
             'ま':['ma'],'み':['mi'],'む':['mu'],'め':['me'],'も':['mo'],
             'や':['ya'],'ゆ':['yu'],'よ':['yo'],
             'ら':['ra'],'り':['ri'],'る':['ru'],'れ':['re'],'ろ':['ro'],
@@ -153,7 +152,7 @@
             'ぱ':['pa'],'ぴ':['pi'],'ぷ':['pu'],'ぺ':['pe'],'ぽ':['po'],
             'ぁ':['la','xa'],'ぃ':['li','xi'],'ぅ':['lu','xu'],'ぇ':['le','xe'],'ぉ':['lo','xo'],
             'ゃ':['lya','xya'],'ゅ':['lyu','xyu'],'ょ':['lyo','xyo'],
-            'っ':['ltu','xtu','ltsu'],
+            'っ':['ltu','xtu'],
             'うぁ':['wha'],'うぃ':['whi','wi'],'うぇ':['whe','we'],'うぉ':['who'],
             'きゃ':['kya'],'きぃ':['kyi'],'きゅ':['kyu'],'きぇ':['kye'],'きょ':['kyo'],
             'しゃ':['sya','sha'],'しぃ':['syi'],'しゅ':['syu','shu'],'しぇ':['sye','she'],'しょ':['syo','sho'],
@@ -220,9 +219,7 @@
         }
 
         function makeDefaultRoman(kana) {
-            // 🤖 英語（半角英字）の場合はそのまま返す
-            if (/^[a-zA-Z]+$/.test(kana)) return kana;
-
+            if (/^[a-zA-Z\s]+$/.test(kana)) return kana;
             let res = "", i = 0;
             while(i < kana.length) {
                 if(i+1 < kana.length && romanMap[kana.substr(i,2)]) { res += romanMap[kana.substr(i,2)][0]; i += 2; }
@@ -234,50 +231,71 @@
             return res;
         }
 
-        // 🤖 修正：純粋な英単語入力に対応した超強力判定ロジック
+        // 🌟 改良版：入力された文字列(inputStr)が、ひらがな(kanaStr)に対して妥当なローマ字のプレフィックスであるかを検証する
         function checkInput(kanaStr, inputStr) {
             if (inputStr === "") return { match: true, remainingKana: kanaStr };
             if (kanaStr === "") return { match: false };
 
-            // 👑 英語モードの判定ルート
-            if (/^[a-zA-Z]+$/.test(kanaStr)) {
+            // 英語モード
+            if (/^[a-zA-Z\s]+$/.test(kanaStr)) {
                 if (kanaStr.toLowerCase().startsWith(inputStr.toLowerCase())) {
                     return { match: true, remainingKana: kanaStr.substr(inputStr.length) };
                 }
                 return { match: false };
             }
 
-            // 従来通りのローマ字判定ルート
+            // 2文字の組み合わせ（しゃ、きゃ等）
             if (kanaStr.length >= 2) {
                 let d = kanaStr.substr(0, 2);
                 if (romanMap[d]) {
                     for (let r of romanMap[d]) {
-                        if (inputStr.startsWith(r)) { let res = checkInput(kanaStr.substr(2), inputStr.substr(r.length)); if (res.match) return res; }
+                        if (inputStr.startsWith(r)) { return checkInput(kanaStr.substr(2), inputStr.substr(r.length)); }
                         if (r.startsWith(inputStr)) return { match: true, remainingKana: kanaStr };
                     }
                 }
             }
 
             let s = kanaStr[0];
+
+            // 「っ」の特殊処理
             if (s === 'っ' && kanaStr.length >= 2) {
-                for (let nr of (romanMap[kanaStr[1]] || [])) {
-                    if (inputStr.startsWith(nr[0])) { let res = checkInput(kanaStr.substr(1), inputStr.substr(1)); if (res.match) return res; }
-                    if (nr[0] === inputStr) return { match: true, remainingKana: kanaStr };
+                let nextKana = kanaStr[1];
+                let nextRomList = romanMap[nextKana] || [];
+                for (let nr of nextRomList) {
+                    let doubleLetter = nr[0]; // 子音 (例: 't' from 'ta')
+                    if (doubleLetter && !['a','i','u','e','o'].includes(doubleLetter)) {
+                        if (inputStr.startsWith(doubleLetter)) {
+                            // 子音1文字を消費して、「っ」をスキップし次へ
+                            let res = checkInput(kanaStr.substr(1), inputStr.substr(1));
+                            if (res.match) return res;
+                        }
+                    }
                 }
-            }
-            if (s === 'ん' && kanaStr.length >= 2) {
-                if (!['あ','い','う','え','お','な','に','ぬ','ね','の','や','ゆ','よ','ん','ぁ','ぃ','ぅ','ぇ','ぉ','ゃ','ゅ','ょ'].includes(kanaStr[1])) {
-                    if (inputStr.startsWith('n')) { let res = checkInput(kanaStr.substr(1), inputStr.substr(1)); if (res.match) return res; }
-                }
-            }
-            if (romanMap[s]) {
-                for (let r of romanMap[s]) {
-                    if (inputStr.startsWith(r)) { let res = checkInput(kanaStr.substr(1), inputStr.substr(r.length)); if (res.match) return res; }
+                // 単体での「っ」入力 (xtu, ltu)
+                for (let r of (romanMap['っ'] || [])) {
+                    if (inputStr.startsWith(r)) return checkInput(kanaStr.substr(1), inputStr.substr(r.length));
                     if (r.startsWith(inputStr)) return { match: true, remainingKana: kanaStr };
                 }
             }
-            if (inputStr.toLowerCase() === s.toLowerCase()) return { match: true, remainingKana: kanaStr.substr(1) };
-            if (s.toLowerCase().startsWith(inputStr.toLowerCase())) return { match: true, remainingKana: kanaStr };
+
+            // 「ん」の特殊処理（次の文字が母音やナ行等でない場合、nが1個でも通るケース）
+            if (s === 'ん' && kanaStr.length >= 2) {
+                if (!['あ','い','う','え','お','な','に','ぬ','ね','の','や','ゆ','よ','ん','ぁ','ぃ','ぅ','ぇ','ぉ','ゃ','ゅ','ょ'].includes(kanaStr[1])) {
+                    if (inputStr === 'n') return { match: true, remainingKana: kanaStr };
+                    if (inputStr.startsWith('n') && !inputStr.startsWith('nn')) {
+                        return checkInput(kanaStr.substr(1), inputStr.substr(1));
+                    }
+                }
+            }
+
+            // 通常の1文字処理
+            if (romanMap[s]) {
+                for (let r of romanMap[s]) {
+                    if (inputStr.startsWith(r)) return checkInput(kanaStr.substr(1), inputStr.substr(r.length));
+                    if (r.startsWith(inputStr)) return { match: true, remainingKana: kanaStr };
+                }
+            }
+
             return { match: false };
         }
 
@@ -362,7 +380,7 @@
                         <tr><td>ミス入力 (Miss)</td><td>${stats.missTypes} 回</td></tr>
                         <tr><td>正確率 (Accuracy)</td><td>${acc} %</td></tr>
                         <tr><td>最高コンボ数 (Max Combo)</td><td>${stats.maxCombo} Combo</td></tr>
-                        <tr><td>タイピング速度 (WPM)</td><td>${wpm} 打/分</td></tr>
+                        <tr><td>タイピング速度 (WPM)</td><td>${wpm} 打鍵/分</td></tr>
                     </table>
                     <button id="retry-btn" onclick="resetGame()">もう一度挑戦する</button>
                 </div>`;
